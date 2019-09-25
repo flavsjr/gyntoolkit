@@ -15,6 +15,7 @@ import random
 import threading
 import base64
 import time
+import whois
 from os import system
 import os
 from sys import exit
@@ -84,12 +85,15 @@ def obterInfo():
         limparTela()
         print(LogoInfo)
         print(" \033[1;32m [1] Escanear Portas")
-        print(" \033[1;32m [2] Voltar\n")
+        print(" \033[1;32m [2] Whois")
+        print(" \033[1;32m [0] Voltar\n")
         escolha2 = input(gynToolkitPrompt)
         limparTela()
         if escolha2 == "1":
             escanear()
-        elif escolha2 == "2":
+        if escolha2 == "2":
+            whois2()
+        elif escolha2 == "0":
             system("reset")
             opcoes()
         else:
@@ -141,6 +145,15 @@ def escanear():
     elif continuar == "n":
         exit(1)
 #sckt.close()
+
+def whois2():
+    menu()
+    try:
+        data = input("Enter a domain: ")
+        w = whois.whois(data)
+    except:
+        whois()
+    print(w)
 
 opcoes() 
 
