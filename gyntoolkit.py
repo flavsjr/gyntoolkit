@@ -143,7 +143,7 @@ def escanear():
     if continuar == "s":
         escanear()
     elif continuar == "n":
-        exit(1)
+        opcoes()
 #sckt.close()
 
 def whois2():
