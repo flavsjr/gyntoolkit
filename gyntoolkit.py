@@ -154,6 +154,11 @@ def whois2():
     except:
         whois()
     print(w)
+    continuar = input("\n\033[1;32mDeseja outra consulta? (s/n):\033[1;m ")
+    if continuar == "s":
+        whois2()
+    elif continuar == "n":
+        opcoes()
 
 opcoes() 
 
