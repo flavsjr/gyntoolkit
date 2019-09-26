@@ -90,9 +90,9 @@ def obterInfo():
         escolha2 = input(gynToolkitPrompt)
         limparTela()
         if escolha2 == "1":
-            escanear()
+            PortScan()
         if escolha2 == "2":
-            whois2()
+            WhoisScan()
         elif escolha2 == "0":
             system("reset")
             opcoes()
@@ -101,34 +101,34 @@ def obterInfo():
          sleep(1)
          obterInfo()
 
-def escanear():
+def PortScan():
     menu()
     try:
         host = input("\033[1;32mDigite o host:\033[1;m ")
         print("")
     except:
-        escanear()
+        PortScan()
     try:       
         ip = gethostbyname(host)
         print("\033[1;32mEndereco IP ▬▶\033[1;m %s \n" %(ip))
     except:
         print("\033[1;32mHost invalido.\033[1;m")   
         sleep(3)
-        escanear()
+        PortScan()
     try:
         pi = int(input("\n\033[1;32mPorta inicial (ex: 80):\033[1;m "))
         print("")
     except:
         print("\033[1;32mPorta inicial invalida.\033[1;m")
         sleep(3)
-        escanear()    
+        PortScan()    
     try:
         pf = int(input("\033[1;32mPorta final (ex: 443):\033[1;m "))
         print("\n")
     except:
         print("\033[1;32mPorta final invalida.\033[1;m")
         sleep(3)
-        escanear()         
+        PortScan()         
         
     print("\033[33mIniciando o escaneamento\033[1;m\033[32m...\033[1;m\n")  
     for i in range(pi, pf+1):
@@ -141,22 +141,22 @@ def escanear():
     print("\n\033[33mEscaneamento finalizado\033[1;m\n")
     continuar = input("\n\033[1;32mDeseja fazer outro escaneamento (s/n):\033[1;m ")
     if continuar == "s":
-        escanear()
+        PortScan()
     elif continuar == "n":
         opcoes()
 #sckt.close()
 
-def whois2():
+def WhoisScan():
     menu()
     try:
         data = input("Enter a domain: ")
         w = whois.whois(data)
     except:
-        whois()
+        WhoisScan()
     print(w)
     continuar = input("\n\033[1;32mDeseja outra consulta? (s/n):\033[1;m ")
     if continuar == "s":
-        whois2()
+        WhoisScan()
     elif continuar == "n":
         opcoes()
 
