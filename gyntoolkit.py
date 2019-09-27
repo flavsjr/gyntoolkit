@@ -50,7 +50,7 @@ def opcoes():
     menu()
     try:
         print("\033[1;32mEscolha uma opção:\033[1;32m \n")
-        escolha = int(input("\033[1;32m [1] Obter Informações\n \033[1;32m[2] Sair\n\n \033[1;91m▬▶\033[1;m "))
+        escolha = int(input("\033[1;32m [1] Obter Informações\n \033[1;32m[2] Brute Force\n \033[1;32m[0] Sair\n\n \033[1;91m▬▶\033[1;m "))
     except:
         print("\n\033[1;32mEscolha invalida\033[1;m")
         sleep(1)
@@ -59,6 +59,8 @@ def opcoes():
     if escolha == 1:
         obterInfo()
     elif escolha == 2:
+        bruteForce()
+    elif escolha == 0:
         system("reset")
         exit(1)
     else:
@@ -79,6 +81,17 @@ LogoInfo = '''
     ██║██║ ╚████║██║     ╚██████╔╝
     ╚═╝╚═╝  ╚═══╝╚═╝      ╚═════╝ 
     ~Obtenção de Informação~
+    '''
+
+LogoBrute = '''
+    \033[1;32m
+    ██████╗ ██████╗ ██╗   ██╗████████╗███████╗    ███████╗ ██████╗ ██████╗  ██████╗███████╗
+    ██╔══██╗██╔══██╗██║   ██║╚══██╔══╝██╔════╝    ██╔════╝██╔═══██╗██╔══██╗██╔════╝██╔════╝
+    ██████╔╝██████╔╝██║   ██║   ██║   █████╗      █████╗  ██║   ██║██████╔╝██║     █████╗  
+    ██╔══██╗██╔══██╗██║   ██║   ██║   ██╔══╝      ██╔══╝  ██║   ██║██╔══██╗██║     ██╔══╝  
+    ██████╔╝██║  ██║╚██████╔╝   ██║   ███████╗    ██║     ╚██████╔╝██║  ██║╚██████╗███████╗
+    ╚═════╝ ╚═╝  ╚═╝ ╚═════╝    ╚═╝   ╚══════╝    ╚═╝      ╚═════╝ ╚═╝  ╚═╝ ╚═════╝╚══════╝                                                                                 
+    ~Gerando Wordlist Brute Force~
     '''
 
 def obterInfo():
@@ -160,5 +173,27 @@ def WhoisScan():
     elif continuar == "n":
         opcoes()
 
-opcoes() 
+def bruteForce():
+    limparTela()
+    print(LogoBrute)
+    print(" \033[1;32m [1] WordList Generator: Cupp Tool - github.com/Mebus/cupp")
+    print(" \033[1;32m [0] Voltar\n")
+    escolhabruteForce = input(gynToolkitPrompt)
+    if escolhabruteForce == "1":
+        CuppWordList()
+    elif escolhabruteForce == "0":
+        system("reset")
+        opcoes()
+    else:
+     print("\n\033[1;32mEscolha invalida\033[1;m")
+     sleep(1)
+     bruteForce()
 
+def CuppWordList():
+    menu()
+    try:
+        os.system('python3 cupp/cupp.py -i')
+    except:
+        bruteForce()    
+
+opcoes()
