@@ -55,7 +55,7 @@ def opcoes():
         print("\n\033[1;32mEscolha invalida\033[1;m")
         sleep(1)
         opcoes()
-        
+    limparTela()    
     if escolha == 1:
         obterInfo()
     elif escolha == 2:
@@ -179,6 +179,7 @@ def bruteForce():
     print(" \033[1;32m [1] WordList Generator: Cupp Tool - github.com/Mebus/cupp")
     print(" \033[1;32m [0] Voltar\n")
     escolhabruteForce = input(gynToolkitPrompt)
+    limparTela()
     if escolhabruteForce == "1":
         CuppWordList()
     elif escolhabruteForce == "0":
@@ -193,6 +194,11 @@ def CuppWordList():
     menu()
     try:
         os.system('python3 cupp/cupp.py -i')
+        limparTela()
+        print("\n\033[1;32mWordlist gerada com sucesso. Pode consultar o nome abaixo: \033[1;m")
+        os.system('ls *.txt')
+        sleep(8)
+        bruteForce()
     except:
         bruteForce()    
 
