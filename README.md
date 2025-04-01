@@ -60,6 +60,7 @@ pip install scapy colorama requests python-whois
 # (Opcional) Para usar o CUPP
 git clone https://github.com/Mebus/cupp.git
 ```
+---
 
 ## Contribuição 🤝
 
