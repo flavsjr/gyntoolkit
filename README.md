@@ -12,7 +12,7 @@ Ferramenta de Pentest com múltiplas funcionalidades para análise de segurança
 
 ## Índice 📑
 - [Recursos Principais](#recursos-principais-)
-- [Instalação](#instalação-)
+- [Instalação](#instalação)
 - [Uso Básico](#uso-básico-)
 - [Capturas de Tela](#capturas-de-tela-)
 - [Contribuição](#contribuição-)
