@@ -7,6 +7,7 @@ import re
 import asyncio
 import requests
 import whois
+import dns.resolver
 from typing import Dict, List, Tuple
 from colorama import Fore, Style, init
 from scapy.all import ARP, Ether, srp, TCP, IP, sr1
@@ -172,13 +173,68 @@ def whois_lookup(domain: str):
         return whois.whois(domain)
     except Exception as e:
         return f"Erro na consulta WHOIS: {str(e)}"
+    
+def dns_lookup(domain: str,
+               record_type: str = "A",
+               nameserver: str = None,
+               timeout: int = 5) -> List[str]:
+    """
+    Consulta registros DNS de um domínio.
+    :param domain: domínio a ser consultado
+    :param record_type: tipo de registro (A, AAAA, MX, TXT, CNAME, NS, SOA, etc.)
+    :param nameserver: servidor DNS (ex: "8.8.8.8"); None para usar o default
+    :param timeout: tempo máximo de espera, em segundos
+    :return: lista de strings com os dados retornados
+    """
+    resolver = dns.resolver.Resolver()
+    resolver.lifetime = timeout
+    if nameserver:
+        resolver.nameservers = [nameserver]
+    try:
+        answers = resolver.resolve(domain, record_type)
+        return [rdata.to_text() for rdata in answers]
+    except dns.resolver.NoAnswer:
+        return [f"No {record_type} record found for {domain}"]
+    except dns.resolver.NXDOMAIN:
+        return [f"Domain {domain} does not exist"]
+    except Exception as e:
+        return [f"Error: {e}"]
+    
+DNS_TYPES = [
+    ("A",     "Endereço IPv4"),
+    ("AAAA",  "Endereço IPv6"),
+    ("MX",    "Servidores de e-mail"),
+    ("NS",    "Servidores DNS autoritativos"),
+    ("CNAME", "Apelido de outro domínio"),
+    ("TXT",   "Registros de texto como SPF, DKIM, etc."),
+    ("SOA",   "Informações administrativas do domínio")
+]
+
+def escolher_tipo_dns() -> str:
+    """Mostra menu e retorna o tipo DNS escolhido"""
+    print(f"\n{Fore.CYAN}Selecione o tipo de registro DNS:{Style.RESET_ALL}")
+    for idx, (tipo, desc) in enumerate(DNS_TYPES, 1):
+        print(f" {Fore.YELLOW}[{idx}]{Style.RESET_ALL} {tipo} → {desc}")
+    print(f" {Fore.YELLOW}[0]{Style.RESET_ALL} Voltar")
+
+    while True:
+        try:
+            choice = int(input(f"\n{PROMPT}"))
+            if choice == 0:
+                return None
+            elif 1 <= choice <= len(DNS_TYPES):
+                return DNS_TYPES[choice - 1][0]
+            else:
+                raise ValueError
+        except ValueError:
+            print(f"{Fore.RED}Escolha inválida. Tente novamente.{Style.RESET_ALL}")
 
 # --------------------------
 # Fluxo Principal
 # --------------------------
 async def main_flow():
     while True:
-        choice = show_menu("Menu Principal", [
+        choice = show_menu("Menu Principal:", [
             "Obter Informações",
             "Brute Force",
             "Varredura Avançada"
@@ -189,7 +245,7 @@ async def main_flow():
             sys.exit()
             
         elif choice == 1:  # Obter Informações
-            sub_choice = show_menu("Obter Informações", [
+            sub_choice = show_menu("Obter Informações:", [
                 "Consulta WHOIS",
                 "DNS Lookup",
                 "Geolocalização IP"
@@ -199,9 +255,24 @@ async def main_flow():
                 domain = input(f"\n{Fore.CYAN}Digite o domínio: {Style.RESET_ALL}")
                 print(f"\n{Fore.GREEN}Resultado:{Style.RESET_ALL}")
                 print(whois_lookup(domain))
+
+            elif sub_choice == 2:
+                domain = input(f"\n{Fore.CYAN}Digite o domínio: {Style.RESET_ALL}")
+        
+                rtype = escolher_tipo_dns()
+                if not rtype:
+                    return
+
+                ns = input(f"{Fore.CYAN}Servidor DNS (ENTER para default): {Style.RESET_ALL}") or None
+
+                print(f"\n{Fore.GREEN}Consultando registro {rtype} para {domain}...{Style.RESET_ALL}\n")
+                records = dns_lookup(domain, rtype.upper(), ns)
+                for rec in records:
+                    print(f" - {rec}")
+
             
         elif choice == 2:  # Brute Force
-            sub_choice = show_menu("Brute Force", [
+            sub_choice = show_menu("Brute Force:", [
                 "Gerar Wordlist",
                 "Ataque SSH",
                 "Ataque HTTP"
