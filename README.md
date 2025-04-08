@@ -62,6 +62,11 @@ git clone https://github.com/Mebus/cupp.git
 ```
 ---
 
+## Capturas de tela 📷
+![Captura de Tela](https://i.imgur.com/u2yLlZ3.png)
+
+---
+
 ## Contribuição 🤝
 
 - 1º - Faça um Fork do projeto
