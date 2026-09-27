@@ -5,15 +5,25 @@ import sys
 import os
 import re
 import asyncio
+import ipaddress
+import logging
 import requests
 import whois
 import dns.resolver
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 from colorama import Fore, Style, init
 from scapy.all import ARP, Ether, srp, TCP, IP, sr1
 
 # Inicialização do Colorama
 init(autoreset=True)
+
+# Logging estruturado (arquivo + stderr silencioso p/ não poluir UI)
+logging.basicConfig(
+    level=logging.WARNING,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    handlers=[logging.FileHandler("gyntoolkit.log", encoding="utf-8")],
+)
+log = logging.getLogger("gyntoolkit")
 
 # --------------------------
 # Configurações e Constantes
@@ -75,8 +85,11 @@ async def syn_scan(target: str, port: int) -> Tuple[int, bool]:
     try:
         pkt = IP(dst=target)/TCP(dport=port, flags="S")
         response = sr1(pkt, timeout=2, verbose=0)
+        if response is None:
+            return (port, False)
         return (port, response.haslayer(TCP) and response.getlayer(TCP).flags == 0x12)
-    except:
+    except (OSError, PermissionError) as e:
+        log.warning("syn_scan %s:%s falhou: %s", target, port, e)
         return (port, False)
 
 async def connect_scan(target: str, port: int) -> Tuple[int, bool]:
@@ -89,7 +102,7 @@ async def connect_scan(target: str, port: int) -> Tuple[int, bool]:
         writer.close()
         await writer.wait_closed()
         return (port, True)
-    except:
+    except (asyncio.TimeoutError, ConnectionRefusedError, OSError):
         return (port, False)
 
 async def get_banner(target: str, port: int) -> Tuple[int, str]:
@@ -101,19 +114,55 @@ async def get_banner(target: str, port: int) -> Tuple[int, str]:
         )
         writer.write(b"GET / HTTP/1.1\r\n\r\n")
         banner = await asyncio.wait_for(reader.read(512), timeout=2)
+        writer.close()
+        try:
+            await writer.wait_closed()
+        except OSError:
+            pass
         return (port, banner.decode(errors='ignore').strip())
-    except:
+    except (asyncio.TimeoutError, ConnectionRefusedError, OSError) as e:
+        log.debug("banner %s:%s vazio: %s", target, port, e)
         return (port, "Nenhum banner identificado")
 
 def check_vulnerabilities(service: str) -> List[str]:
-    """Verifica vulnerabilidades conhecidas usando NVD"""
+    """Consulta NVD API 2.0 por CVEs associados ao serviço."""
+    if not service or service.lower() in {"desconhecido", "unknown"}:
+        return []
     try:
         response = requests.get(
-            f"https://services.nvd.nist.gov/rest/json/cves/1.0?keyword={service}",
-            timeout=10
+            "https://services.nvd.nist.gov/rest/json/cves/2.0",
+            params={"keywordSearch": service, "resultsPerPage": 5},
+            headers={"User-Agent": "gyntoolkit/2.0"},
+            timeout=15,
         )
-        return [cve['cve']['CVE_data_meta']['ID'] for cve in response.json()['result']['CVE_Items'][:5]]
-    except:
+        response.raise_for_status()
+        data = response.json()
+        return [item["cve"]["id"] for item in data.get("vulnerabilities", [])[:5]]
+    except (requests.RequestException, ValueError, KeyError) as e:
+        log.warning("NVD lookup falhou para '%s': %s", service, e)
+        return []
+
+def network_discovery(cidr: str, timeout: int = 2) -> List[str]:
+    """Descobre hosts ativos em rede via ARP scan (requer privilégio)."""
+    try:
+        ipaddress.ip_network(cidr, strict=False)
+    except ValueError as e:
+        log.error("CIDR inválido '%s': %s", cidr, e)
+        print(f"{Fore.RED}CIDR inválido: {e}{Style.RESET_ALL}")
+        return []
+
+    try:
+        arp = ARP(pdst=cidr)
+        ether = Ether(dst="ff:ff:ff:ff:ff:ff")
+        answered, _ = srp(ether / arp, timeout=timeout, verbose=0)
+        hosts = sorted({r.psrc for _, r in answered}, key=lambda ip: ipaddress.ip_address(ip))
+        return hosts
+    except PermissionError:
+        print(f"{Fore.RED}ARP scan requer privilégio root/admin.{Style.RESET_ALL}")
+        return []
+    except OSError as e:
+        log.error("ARP scan falhou: %s", e)
+        print(f"{Fore.RED}Falha no ARP scan: {e}{Style.RESET_ALL}")
         return []
 
 # --------------------------
@@ -257,11 +306,14 @@ async def main_flow():
                 print(whois_lookup(domain))
 
             elif sub_choice == 2:
-                domain = input(f"\n{Fore.CYAN}Digite o domínio: {Style.RESET_ALL}")
-        
+                domain = sanitize_input(
+                    input(f"\n{Fore.CYAN}Digite o domínio: {Style.RESET_ALL}"),
+                    r"[A-Za-z0-9.-]",
+                )
+
                 rtype = escolher_tipo_dns()
                 if not rtype:
-                    return
+                    continue
 
                 ns = input(f"{Fore.CYAN}Servidor DNS (ENTER para default): {Style.RESET_ALL}") or None
 
@@ -280,16 +332,27 @@ async def main_flow():
             
         elif choice == 3:  # Varredura Avançada
             target = sanitize_input(input(f"\n{Fore.CYAN}Alvo (IP/rede): {Style.RESET_ALL}"))
-            scan_type = input("Tipo de varredura [rápido/completo]: ").lower()
+            scan_type = input("Tipo de varredura [rápido/completo]: ").lower().strip() or "rápido"
 
             if '/' in target:
                 print(f"\n{Fore.CYAN}Descobrindo hosts ativos...{Style.RESET_ALL}")
                 hosts = network_discovery(target)
+                if not hosts:
+                    print(f"{Fore.RED}Nenhum host respondeu.{Style.RESET_ALL}")
+                    input(f"\n{Fore.YELLOW}Pressione Enter para continuar...{Style.RESET_ALL}")
+                    continue
                 print(f"{Fore.GREEN}Hosts encontrados: {len(hosts)}{Style.RESET_ALL}")
                 for idx, host in enumerate(hosts, 1):
                     print(f"{idx}. {host}")
-                selection = input("Selecione o host (ENTER para todos): ")
-                targets = [hosts[int(selection)-1] if selection else hosts]
+                selection = input("Selecione o host (ENTER para todos): ").strip()
+                if selection:
+                    try:
+                        targets = [hosts[int(selection) - 1]]
+                    except (ValueError, IndexError):
+                        print(f"{Fore.RED}Seleção inválida.{Style.RESET_ALL}")
+                        continue
+                else:
+                    targets = hosts
             else:
                 targets = [target]
 
@@ -311,12 +374,19 @@ async def main_flow():
 # --------------------------
 # Ponto de Entrada
 # --------------------------
-if __name__ == "__main__":
+def main_entry() -> None:
+    """Entry point CLI (usado por pyproject scripts)."""
     try:
         if os.name == 'posix' and os.geteuid() != 0:
             print(f"\n{Fore.RED}Aviso: Funcionalidades avançadas requerem root!{Style.RESET_ALL}")
-        
+        elif os.name == 'nt' and not is_admin_windows():
+            print(f"\n{Fore.RED}Aviso: Funcionalidades avançadas requerem administrador!{Style.RESET_ALL}")
+
         asyncio.run(main_flow())
     except KeyboardInterrupt:
         print(f"\n{Fore.RED}Scan interrompido pelo usuário.{Style.RESET_ALL}")
         sys.exit(1)
+
+
+if __name__ == "__main__":
+    main_entry()
