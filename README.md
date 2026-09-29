@@ -26,6 +26,8 @@ SSH/HTTP e utilitários crypto — tudo em um único CLI dark com interface `gyn
 
 - [Instalação](#instalação)
 - [Uso](#uso)
+- [Configuração](#configuração)
+- [Relatórios](#relatórios)
 - [Módulos](#módulos)
 - [Lab local de testes](#lab-local-de-testes)
 - [Estrutura](#estrutura)
@@ -58,10 +60,13 @@ o SYN scan degrada para TCP connect scan automaticamente.
 ## Uso
 
 ```bash
-python gyntoolkit.py
+python -m gyntoolkit
 ```
 
 Interface interativa dark com menu numérico. Comandos entram via `gyntoolkit:~#`.
+
+Saída em tabelas/painéis via [`rich`](https://github.com/Textualize/rich) quando
+disponível — degrada para texto colorido puro se `rich` não estiver instalado.
 
 **Instalação como CLI system-wide (opcional):**
 
@@ -69,6 +74,27 @@ Interface interativa dark com menu numérico. Comandos entram via `gyntoolkit:~#
 pip install -e .
 gyntoolkit    # entry point instalado via pyproject
 ```
+
+---
+
+## Configuração
+
+Opcional. Copie `.gyntoolkit.example.yaml` para `.gyntoolkit.yaml` e ajuste apenas
+as chaves que quiser sobrescrever — o resto usa os defaults.
+
+```bash
+cp .gyntoolkit.example.yaml .gyntoolkit.yaml
+```
+
+Ordem de resolução: caminho em `GYNTOOLKIT_CONFIG` → `.gyntoolkit.yaml` no diretório
+atual → `.gyntoolkit.yaml` na raiz do projeto. Controla defaults de scan, workers e
+timeouts de brute/recon, diretório de export e chaves de API (reservadas).
+
+## Relatórios
+
+Após scans e consultas de recon, a CLI oferece exportar o resultado em **JSON** ou
+**relatório HTML** (tema dark). Arquivos vão para `reports/<módulo>-<timestamp>.<fmt>`
+(configurável em `export.dir`; `export.auto: true` exporta sem perguntar).
 
 ---
 
@@ -144,9 +170,22 @@ Ver **`lab/README.md`** para passo-a-passo manual de cada laboratório (SSH, HTT
 
 ```
 gyntoolkit/
-├── gyntoolkit.py         # CLI monolítico, entry point
+├── gyntoolkit/           # pacote Python (rode com `python -m gyntoolkit`)
+│   ├── __init__.py       # re-exporta API pública (compat + entry point)
+│   ├── __main__.py       # habilita `python -m gyntoolkit`
+│   ├── core.py           # constantes, logging, helpers de terminal/menu
+│   ├── scan.py           # port scan, banner, CVE lookup, host discovery
+│   ├── recon.py          # WHOIS, DNS, geo, TLS, fingerprint, breaches, traceroute
+│   ├── brute.py          # aviso ético, wordlists, CUPP, SSH e HTTP brute
+│   ├── utils.py          # hash, base64, JWT decode
+│   ├── config.py         # loader do .gyntoolkit.yaml (deep-merge sobre defaults)
+│   ├── export.py         # export JSON + relatório HTML
+│   ├── ui.py             # camada rich (tabelas/painéis) com fallback colorama
+│   └── cli.py            # fluxo interativo (menu) + ponto de entrada
 ├── pyproject.toml        # build system + deps + ruff config
 ├── requirements.txt      # deps pinadas
+├── .gyntoolkit.example.yaml  # config de exemplo
+├── reports/              # relatórios exportados (gitignored)
 ├── cupp/                 # gerador de wordlist customizada (opcional)
 ├── lab/                  # ambiente de testes local
 │   ├── README.md
@@ -155,6 +194,7 @@ gyntoolkit/
 │   ├── run_e2e.py
 │   └── wordlists/
 ├── gyntoolkit.log        # log runtime (gitignored)
+├── LICENSE
 └── README.md
 ```
 
@@ -167,10 +207,12 @@ gyntoolkit/
 - [x] **v2.0 Fase 2** — Geo IP, CUPP wire-in, SSH brute, HTTP brute, lab local
 - [x] **v2.0 Fase 3** — Recon avançado (crt.sh, SSL, HTTP fingerprint, InternetDB,
       HIBP, MAC, traceroute) + Utilitários (hash, base64, JWT)
-- [ ] **v2.1** — UI com `rich` (tabelas, spinners cyberpunk)
-- [ ] **v2.2** — Export resultados JSON / HTML report
-- [ ] **v2.3** — Config `.gyntoolkit.yaml` (timeouts, wordlists default, API keys)
-- [ ] **v2.4** — Refactor split em `modules/recon/`, `modules/brute/`, `modules/utils/`
+- [x] **v2.1** — UI com `rich` (tabelas, painéis, spinners) + fallback colorama
+- [x] **v2.2** — Export resultados JSON / relatório HTML dark
+- [x] **v2.3** — Config `.gyntoolkit.yaml` (timeouts, wordlists default, API keys)
+- [x] **v2.4** — Refactor: split do monólito em pacote (`core`, `scan`, `recon`,
+      `brute`, `utils`, `cli`) — rode com `python -m gyntoolkit`
+- [ ] **v2.5** — Testes unitários (`pytest`) para recon/utils/config/export
 
 ---
 

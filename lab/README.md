@@ -92,7 +92,7 @@ Deixe rodando.
 **Terminal 2 (gyntoolkit):**
 
 ```powershell
-python gyntoolkit.py
+python -m gyntoolkit
 ```
 
 Fluxo do menu:
@@ -135,7 +135,7 @@ Mock HTTP: /basic (admin:letmein) | /login form (admin:s3cret) em 127.0.0.1:8080
 **Terminal 2 (gyntoolkit):**
 
 ```powershell
-python gyntoolkit.py
+python -m gyntoolkit
 ```
 
 Fluxo do menu:
@@ -165,7 +165,7 @@ Mesmo mock HTTP do Lab 2 (deixe rodando).
 **Terminal 2 (gyntoolkit):**
 
 ```powershell
-python gyntoolkit.py
+python -m gyntoolkit
 ```
 
 Fluxo do menu:

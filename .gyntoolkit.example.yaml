@@ -1,0 +1,32 @@
+# GynToolkit — configuração de exemplo.
+# Copie para `.gyntoolkit.yaml` (na raiz ou no diretório de execução) e ajuste.
+# Só declare as chaves que quiser sobrescrever; o resto usa os defaults.
+# Também dá para apontar um caminho via env: GYNTOOLKIT_CONFIG=/path/config.yaml
+
+scan:
+  default_type: "rápido"        # "rápido" (top 21 portas) ou "completo" (1-65535)
+
+brute:
+  ssh_workers: 8
+  http_workers: 10
+  delay: 0.1                     # segundos entre tentativas por worker
+  ssh_timeout: 5
+  http_timeout: 10
+  users_wordlist: ""             # path default sugerido no prompt (ex: lab/wordlists/users.txt)
+  passwords_wordlist: ""         # ex: lab/wordlists/passwords.txt
+
+recon:
+  subdomain_timeout: 30
+  ssl_timeout: 8
+  http_timeout: 10
+  traceroute_max_hops: 20
+  traceroute_dport: 80
+
+export:
+  dir: "reports"                 # diretório de saída dos relatórios
+  auto: false                    # true = exporta sem perguntar
+  format: "json"                 # formato quando auto=true: json | html
+
+api_keys:
+  hibp: ""                       # reservado (endpoints atuais são públicos)
+  shodan: ""

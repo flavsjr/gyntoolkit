@@ -18,6 +18,10 @@ env/
 gyntoolkit.log
 *.log
 
+# Relatórios exportados e config local
+reports/
+.gyntoolkit.yaml
+
 # IDE
 .vscode/
 .idea/
