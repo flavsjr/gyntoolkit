@@ -9,6 +9,10 @@
  ╚═════╝   ╚═╝   ╚═╝  ╚═══╝       ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝╚═╝  ╚═╝╚═╝   ╚═╝
 ```
 
+<!-- Demonstração: gere o GIF com `vhs demo.tape` (ver demo.tape na raiz). -->
+![GynToolkit Demo](docs/demo.gif)
+
+[![PyPI](https://img.shields.io/pypi/v/gyntoolkit.svg?style=flat-square&color=00ff00&labelColor=1a1a1a&logo=pypi&logoColor=white)](https://pypi.org/project/gyntoolkit/)
 ![Python](https://img.shields.io/badge/python-3.10+-00ff00.svg?style=flat-square&logo=python&logoColor=white&labelColor=1a1a1a)
 ![License](https://img.shields.io/badge/license-MIT-00ff00.svg?style=flat-square&labelColor=1a1a1a)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20MacOS-1a1a1a.svg?style=flat-square)
@@ -226,6 +230,9 @@ gyntoolkit/
 
 **Estilo de commit:** Conventional Commits (`feat:`, `fix:`, `test:`, `docs:`, `chore:`).
 
+Guia completo (setup de dev, `ruff`, execução do lab E2E): veja [`CONTRIBUTING.md`](CONTRIBUTING.md).
+Use os templates de issue para [bugs](.github/ISSUE_TEMPLATE/bug_report.md) e [features](.github/ISSUE_TEMPLATE/feature_request.md).
+
 ---
 
 ## Disclaimer
@@ -245,3 +252,11 @@ responsabilizam por uso indevido ou danos causados por esta ferramenta.
 ## Licença
 
 MIT — veja `LICENSE`.
+
+---
+
+## Star History
+
+Se o projeto te ajudou, deixe uma ⭐ — ajuda muito na visibilidade!
+
+[![Star History Chart](https://api.star-history.com/svg?repos=flavsjr/gyntoolkit&type=Date)](https://star-history.com/#flavsjr/gyntoolkit&Date)
