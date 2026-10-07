@@ -9,6 +9,7 @@ from pathlib import Path
 
 from colorama import Fore, Style
 
+from . import i18n
 from .core import PROJECT_ROOT, log
 
 
@@ -111,10 +112,10 @@ async def ssh_bruteforce(
             result = await _ssh_try(host, port, u, p, timeout)
             tried += 1
             if tried % 25 == 0:
-                print(f"{Fore.CYAN}[{tried}/{total}] tentativas...{Style.RESET_ALL}")
+                print(f"{Fore.CYAN}{i18n.t('brute.progress', tried=tried, total=total)}{Style.RESET_ALL}")
             if result:
                 found.append(result)
-                print(f"{Fore.GREEN}[+] SSH válido: {u}:{p}{Style.RESET_ALL}")
+                print(f"{Fore.GREEN}{i18n.t('brute.ssh_valid', user=u, pwd=p)}{Style.RESET_ALL}")
 
     tasks = [_guarded(u, p) for u in users for p in passwords]
     await asyncio.gather(*tasks)
@@ -169,10 +170,10 @@ async def http_bruteforce(
 
                 tried += 1
                 if tried % 25 == 0:
-                    print(f"{Fore.CYAN}[{tried}/{total}] tentativas...{Style.RESET_ALL}")
+                    print(f"{Fore.CYAN}{i18n.t('brute.progress', tried=tried, total=total)}{Style.RESET_ALL}")
                 if ok:
                     found.append((u, p))
-                    print(f"{Fore.GREEN}[+] HTTP válido: {u}:{p}{Style.RESET_ALL}")
+                    print(f"{Fore.GREEN}{i18n.t('brute.http_valid', user=u, pwd=p)}{Style.RESET_ALL}")
 
         await asyncio.gather(*[_attempt(u, p) for u in users for p in passwords])
     return found

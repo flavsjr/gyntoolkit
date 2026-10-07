@@ -57,6 +57,10 @@ MESSAGES: dict[str, dict[str, str]] = {
         "menu.utils.b64enc": "Base64 encode",
         "menu.utils.b64dec": "Base64 decode",
         "menu.utils.jwt": "JWT decode (no signature check)",
+        # brute force (runtime)
+        "brute.progress": "[{tried}/{total}] attempts...",
+        "brute.ssh_valid": "[+] SSH valid: {user}:{pwd}",
+        "brute.http_valid": "[+] HTTP valid: {user}:{pwd}",
         # comuns / framing
         "common.back_exit": "Back/Exit",
         "common.invalid_option": "Invalid option! Try again.",
@@ -99,6 +103,10 @@ MESSAGES: dict[str, dict[str, str]] = {
         "menu.utils.b64enc": "Base64 encode",
         "menu.utils.b64dec": "Base64 decode",
         "menu.utils.jwt": "JWT decode (sem verificar assinatura)",
+        # brute force (runtime)
+        "brute.progress": "[{tried}/{total}] tentativas...",
+        "brute.ssh_valid": "[+] SSH válido: {user}:{pwd}",
+        "brute.http_valid": "[+] HTTP válido: {user}:{pwd}",
         # comuns / framing
         "common.back_exit": "Voltar/Sair",
         "common.invalid_option": "Opção inválida! Tente novamente.",
