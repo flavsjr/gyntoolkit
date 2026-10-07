@@ -96,6 +96,10 @@ Ordem de resolução: caminho em `GYNTOOLKIT_CONFIG` → `.gyntoolkit.yaml` no d
 atual → `.gyntoolkit.yaml` na raiz do projeto. Controla defaults de scan, workers e
 timeouts de brute/recon, diretório de export e chaves de API (reservadas).
 
+**Idioma da UI:** os menus rodam em inglês ou português. Defina `ui.lang: auto|en|pt`
+na config, ou `GYNTOOLKIT_LANG=pt` / `=en` por execução; `auto` detecta o locale do
+SO e cai para inglês.
+
 ## Relatórios
 
 Após scans e consultas de recon, a CLI oferece exportar o resultado em **JSON** ou

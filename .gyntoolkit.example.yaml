@@ -22,6 +22,10 @@ recon:
   traceroute_max_hops: 20
   traceroute_dport: 80
 
+ui:
+  lang: "auto"                   # idioma da UI: auto | en | pt
+                                 # auto = env GYNTOOLKIT_LANG > locale do SO > en
+
 export:
   dir: "reports"                 # diretório de saída dos relatórios
   auto: false                    # true = exporta sem perguntar

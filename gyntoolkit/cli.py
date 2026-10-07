@@ -9,7 +9,7 @@ from pathlib import Path
 
 from colorama import Fore, Style
 
-from . import ui
+from . import i18n, ui
 from .brute import (
     cupp_generate,
     http_bruteforce,
@@ -39,7 +39,7 @@ from .utils import b64_decode, b64_encode, hash_file, hash_text, jwt_decode
 
 
 def _pause() -> None:
-    input(f"\n{Fore.YELLOW}Pressione Enter para continuar...{Style.RESET_ALL}")
+    input(f"\n{Fore.YELLOW}{i18n.t('common.press_enter')}{Style.RESET_ALL}")
 
 
 def _offer_export(data, basename: str, title: str) -> None:
@@ -65,30 +65,30 @@ def _offer_export(data, basename: str, title: str) -> None:
 
 async def main_flow():
     while True:
-        choice = show_menu("Menu Principal:", [
-            "Obter Informações",
-            "Brute Force",
-            "Varredura Avançada",
-            "Utilitários"
+        choice = show_menu(i18n.t("menu.main.title"), [
+            i18n.t("menu.main.info"),
+            i18n.t("menu.main.brute"),
+            i18n.t("menu.main.scan"),
+            i18n.t("menu.main.utils"),
         ])
 
         if choice == 0:
-            print(f"\n{Fore.MAGENTA}Saindo...{Style.RESET_ALL}")
+            print(f"\n{Fore.MAGENTA}{i18n.t('common.exiting')}{Style.RESET_ALL}")
             sys.exit()
 
         elif choice == 1:  # Obter Informações
-            sub_choice = show_menu("Obter Informações:", [
-                "Consulta WHOIS",
-                "DNS Lookup",
-                "Geolocalização IP",
-                "Reverse DNS (PTR)",
-                "Subdomain Enum (crt.sh)",
-                "SSL/TLS Cert Inspector",
-                "HTTP Fingerprint",
-                "InternetDB (Shodan free)",
-                "HIBP Breach Check",
-                "MAC Vendor Lookup",
-                "Traceroute (TCP)",
+            sub_choice = show_menu(i18n.t("menu.info.title"), [
+                i18n.t("menu.info.whois"),
+                i18n.t("menu.info.dns"),
+                i18n.t("menu.info.geo"),
+                i18n.t("menu.info.revdns"),
+                i18n.t("menu.info.subenum"),
+                i18n.t("menu.info.ssl"),
+                i18n.t("menu.info.httpfp"),
+                i18n.t("menu.info.internetdb"),
+                i18n.t("menu.info.hibp"),
+                i18n.t("menu.info.macvendor"),
+                i18n.t("menu.info.traceroute"),
             ])
 
             if sub_choice == 1:
@@ -245,10 +245,10 @@ async def main_flow():
 
         elif choice == 2:  # Brute Force
             b = CONFIG["brute"]
-            sub_choice = show_menu("Brute Force:", [
-                "Gerar Wordlist (CUPP)",
-                "Ataque SSH",
-                "Ataque HTTP"
+            sub_choice = show_menu(i18n.t("menu.brute.title"), [
+                i18n.t("menu.brute.cupp"),
+                i18n.t("menu.brute.ssh"),
+                i18n.t("menu.brute.http"),
             ])
 
             if sub_choice == 1:
@@ -364,12 +364,12 @@ async def main_flow():
             _offer_export(report, f"scan-{targets[0]}", f"Scan {', '.join(targets)}")
 
         elif choice == 4:  # Utilitários
-            sub_choice = show_menu("Utilitários:", [
-                "Hash de texto (MD5/SHA1/SHA256/SHA512)",
-                "Hash de arquivo",
-                "Base64 encode",
-                "Base64 decode",
-                "JWT decode (sem verificar assinatura)",
+            sub_choice = show_menu(i18n.t("menu.utils.title"), [
+                i18n.t("menu.utils.hashtext"),
+                i18n.t("menu.utils.hashfile"),
+                i18n.t("menu.utils.b64enc"),
+                i18n.t("menu.utils.b64dec"),
+                i18n.t("menu.utils.jwt"),
             ])
 
             if sub_choice == 1:
@@ -411,13 +411,14 @@ async def main_flow():
 
 def main_entry() -> None:
     """Entry point CLI (usado por pyproject scripts)."""
+    i18n.set_lang(i18n.resolve_lang(CONFIG.get("ui", {}).get("lang")))
     try:
         if os.name == 'posix' and os.geteuid() != 0:
-            print(f"\n{Fore.RED}Aviso: Funcionalidades avançadas requerem root!{Style.RESET_ALL}")
+            print(f"\n{Fore.RED}{i18n.t('warn.need_root')}{Style.RESET_ALL}")
         elif os.name == 'nt' and not is_admin_windows():
-            print(f"\n{Fore.RED}Aviso: Funcionalidades avançadas requerem administrador!{Style.RESET_ALL}")
+            print(f"\n{Fore.RED}{i18n.t('warn.need_admin')}{Style.RESET_ALL}")
 
         asyncio.run(main_flow())
     except KeyboardInterrupt:
-        print(f"\n{Fore.RED}Scan interrompido pelo usuário.{Style.RESET_ALL}")
+        print(f"\n{Fore.RED}{i18n.t('common.interrupted')}{Style.RESET_ALL}")
         sys.exit(1)

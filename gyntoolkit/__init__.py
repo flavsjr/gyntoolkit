@@ -7,7 +7,7 @@ Este ``__init__`` re-exporta a API pública para manter compatibilidade com
 
 __version__ = "2.0.0"
 
-from . import ui
+from . import i18n, ui
 from .brute import (
     cupp_generate,
     http_bruteforce,
@@ -74,7 +74,7 @@ __all__ = [
     # utils
     "hash_text", "hash_file", "b64_encode", "b64_decode", "jwt_decode",
     # config / export / ui
-    "CONFIG", "DEFAULTS", "load_config", "save_report", "export_json", "export_html", "ui",
+    "CONFIG", "DEFAULTS", "load_config", "save_report", "export_json", "export_html", "ui", "i18n",
     # cli
     "main_flow", "main_entry",
 ]
