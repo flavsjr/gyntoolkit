@@ -1,4 +1,15 @@
-# Pasta de assets da documentação.
+# GynToolkit Documentation
 
-Gere o GIF de demonstração com `vhs demo.tape` (a partir da raiz do projeto).
-Saída esperada: `docs/demo.gif`.
+| Doc | Content |
+|-----|---------|
+| [installation.md](installation.md) | Install from source, editable install, PyPI publish |
+| [quickstart.md](quickstart.md) | First run and menu walkthrough |
+| [reconnaissance.md](reconnaissance.md) | Recon modules (WHOIS, DNS, TLS, fingerprint, …) |
+| [scanning.md](scanning.md) | Port scan, banners, CVE lookup, host discovery |
+| [reports.md](reports.md) | JSON / HTML report formats |
+| [configuration.md](configuration.md) | `.gyntoolkit.yaml` reference |
+| [security-lab.md](security-lab.md) | Local lab and end-to-end tests |
+| [development.md](development.md) | Dev setup, lint, tests, release |
+
+Assets (screenshots, banner, demo GIF) live in [`assets/`](assets/). Generate the
+demo GIF from the repo root with `vhs demo.tape` → `docs/demo.gif`.

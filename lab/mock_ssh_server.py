@@ -5,10 +5,12 @@ Roda em 127.0.0.1:2222. Credenciais válidas: admin:hunter2, root:toor.
 USO APENAS EM LABORATÓRIO. Não expor em rede pública.
 """
 import argparse
+import contextlib
 import logging
 import socket
 import sys
 import threading
+
 import paramiko
 
 VALID_CREDS = {
@@ -52,10 +54,8 @@ def handle(client_sock, host_key):
     except paramiko.SSHException as e:
         log.debug("SSH negociação falhou: %s", e)
     finally:
-        try:
+        with contextlib.suppress(Exception):
             transport.close()
-        except Exception:
-            pass
 
 
 def main():
