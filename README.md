@@ -1,4 +1,6 @@
-# GynToolkit v2.0
+# GynToolkit
+
+**🌐 Language / Idioma:** **English** · [Português (BR)](README.pt-BR.md)
 
 ```
  ██████╗██╗   ██╗███╗   ██╗    ████████╗ ██████╗  ██████╗ ██╗     ██╗  ██╗██╗████████╗
@@ -9,254 +11,328 @@
  ╚═════╝   ╚═╝   ╚═╝  ╚═══╝       ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝╚═╝  ╚═╝╚═╝   ╚═╝
 ```
 
-<!-- Demonstração: gere o GIF com `vhs demo.tape` (ver demo.tape na raiz). -->
-![GynToolkit Demo](docs/demo.gif)
+> All-in-one Python security toolkit for reconnaissance, network scanning,
+> vulnerability analysis and **authorized** penetration testing — in a single
+> dark-themed interactive CLI (`gyntoolkit:~#`).
 
+[![CI](https://github.com/flavsjr/gyntoolkit/actions/workflows/tests.yml/badge.svg)](https://github.com/flavsjr/gyntoolkit/actions/workflows/tests.yml)
 [![PyPI](https://img.shields.io/pypi/v/gyntoolkit.svg?style=flat-square&color=00ff00&labelColor=1a1a1a&logo=pypi&logoColor=white)](https://pypi.org/project/gyntoolkit/)
 ![Python](https://img.shields.io/badge/python-3.10+-00ff00.svg?style=flat-square&logo=python&logoColor=white&labelColor=1a1a1a)
 ![License](https://img.shields.io/badge/license-MIT-00ff00.svg?style=flat-square&labelColor=1a1a1a)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20MacOS-1a1a1a.svg?style=flat-square)
 ![Purpose](https://img.shields.io/badge/purpose-pentest%20%7C%20recon-red.svg?style=flat-square&labelColor=1a1a1a)
 
-**Canivete suíço de pentest.** Recon passivo, port scanning, fingerprinting HTTP/TLS, brute-force
-SSH/HTTP e utilitários crypto — tudo em um único CLI dark com interface `gyntoolkit:~#`.
+<!-- Demo: generate the GIF with `vhs demo.tape` (see demo.tape at the repo root). -->
+![GynToolkit Demo](docs/demo.gif)
 
-> `[!] AVISO:` Use **apenas** em alvos com autorização escrita.
-> Uso não autorizado é crime — Lei 12.737/12 (BR), CFAA (US) e equivalentes.
+> `[!] WARNING:` Use **only** against targets you are **authorized in writing** to test.
+> Unauthorized use is a crime — Lei 12.737/12 (BR), CFAA (US) and equivalents.
 
 ---
 
-## Índice
+## Table of Contents
 
-- [Instalação](#instalação)
-- [Uso](#uso)
-- [Configuração](#configuração)
-- [Relatórios](#relatórios)
-- [Módulos](#módulos)
-- [Lab local de testes](#lab-local-de-testes)
-- [Estrutura](#estrutura)
-- [Roadmap](#roadmap)
-- [Contribuição](#contribuição)
+- [Why GynToolkit?](#why-gyntoolkit)
+- [Features](#features)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Example](#example)
+- [Security Lab](#security-lab)
+- [Reports](#reports)
+- [Configuration](#configuration)
+- [Documentation](#documentation)
+- [Development](#development)
+- [Testing](#testing)
+- [Contributing](#contributing)
+- [Security](#security)
 - [Disclaimer](#disclaimer)
-- [Licença](#licença)
+- [License](#license)
 
 ---
 
-## Instalação
+## Why GynToolkit?
 
-**Pré-requisitos:** Python 3.10+ e `pip`.
+- **One CLI, many tools** — recon, port scanning, TLS/HTTP fingerprinting, CVE
+  lookup and SSH/HTTP auth testing, without juggling a dozen separate commands.
+- **Safe to try** — ships with a local lab (`127.0.0.1`) and an end-to-end runner,
+  so you can exercise every brute-force module without touching a real target.
+- **Readable output** — `rich` tables/panels when available, graceful fallback to
+  plain colored text; export any result to JSON or a dark-themed HTML report.
+- **Authorization-first** — every attack module requires explicit confirmation.
+- **Zero mandatory API keys** — recon sources used (crt.sh, ip-api, InternetDB,
+  HIBP, NVD) work on their public/free tiers.
+
+---
+
+## Features
+
+### `[1]` Information Gathering — passive & active recon
+
+| # | Module | Source / technique |
+|---|--------|--------------------|
+| 1 | **WHOIS** | `python-whois` — registrar, dates, contacts |
+| 2 | **DNS Lookup** | `dnspython` — A, AAAA, MX, NS, CNAME, TXT, SOA |
+| 3 | **IP Geolocation** | `ip-api.com` (free) — country, ISP, ASN, proxy/hosting flags |
+| 4 | **Reverse DNS (PTR)** | `socket.gethostbyaddr` |
+| 5 | **Subdomain Enum** | Certificate Transparency via `crt.sh` |
+| 6 | **SSL/TLS Cert Inspector** | `cryptography` — subject, issuer, SANs, expiry, cipher, SHA-256 |
+| 7 | **HTTP Fingerprint** | nginx, Apache, IIS, Cloudflare, PHP, WordPress, Laravel, ASP.NET, Django, Rails, Node |
+| 8 | **InternetDB (Shodan free)** | Open ports, CPEs, known CVEs — no API key |
+| 9 | **HIBP Breach Check** | Domain → known breaches via Have I Been Pwned |
+| 10 | **MAC Vendor Lookup** | `api.macvendors.com` — OUI → vendor |
+| 11 | **Traceroute (TCP)** | `scapy` — hops + RTT (needs privilege) |
+
+### `[2]` Brute Force
+
+| # | Module | Details |
+|---|--------|---------|
+| 1 | **CUPP wordlist** | Wrapper for `cupp.py -i` — custom wordlist generator |
+| 2 | **SSH brute** | `paramiko`, async via `asyncio.to_thread`, concurrency `Semaphore`, delay |
+| 3 | **HTTP brute** | `aiohttp` — Basic Auth or form POST with configurable `fail_signature` |
+
+> Every attack requires typing `AUTORIZO` to confirm — no silent bypass.
+
+### `[3]` Advanced Scanning
+
+- **Port scan** — fast (Top 21 common ports) or full (1–65535)
+- **SYN scan** (stealth) when privileged, automatic fallback to **TCP connect**
+- **Banner grabbing** — async, parallel
+- **CVE analysis** per service via **NVD API v2.0**
+- **Host discovery** (ARP scan) by CIDR — e.g. `192.168.0.0/24`
+- Automatic risk classification based on CVEs found
+
+### `[4]` Utilities
+
+| # | Module | Details |
+|---|--------|---------|
+| 1 | **Text hash** | MD5, SHA1, SHA256, SHA512 |
+| 2 | **File hash** | Streamed (does not load the whole file in memory) |
+| 3 | **Base64 encode** | UTF-8 → base64 |
+| 4 | **Base64 decode** | base64 → UTF-8 with auto-padding |
+| 5 | **JWT decode** | Header + payload without signature verification |
+
+---
+
+## Installation
+
+**Requirements:** Python 3.10+ and `pip`.
+
+### From source (current method)
 
 ```bash
 git clone https://github.com/flavsjr/gyntoolkit.git
 cd gyntoolkit
 pip install -r requirements.txt
 
-# Opcional (recon avançado / brute-force)
-git clone https://github.com/Mebus/cupp.git    # gerador de wordlist customizada
+# Optional: custom wordlist generator for brute-force
+git clone https://github.com/Mebus/cupp.git
 ```
 
-No **Windows**, para SYN scan e traceroute com privilégio raw socket, instale
-[Npcap](https://npcap.com) e rode o `gyntoolkit` em terminal **admin**. Sem Npcap,
-o SYN scan degrada para TCP connect scan automaticamente.
-
----
-
-## Uso
-
-```bash
-python -m gyntoolkit
-```
-
-Interface interativa dark com menu numérico. Comandos entram via `gyntoolkit:~#`.
-
-Saída em tabelas/painéis via [`rich`](https://github.com/Textualize/rich) quando
-disponível — degrada para texto colorido puro se `rich` não estiver instalado.
-
-**Instalação como CLI system-wide (opcional):**
+### As a CLI (editable install)
 
 ```bash
 pip install -e .
-gyntoolkit    # entry point instalado via pyproject
+gyntoolkit          # entry point installed via pyproject
 ```
+
+> **PyPI:** the package metadata is ready for publishing. Once released, install
+> with `pip install gyntoolkit`. See [`docs/installation.md`](docs/installation.md)
+> for the maintainer publish procedure.
+
+**Windows note:** for SYN scan and traceroute (raw sockets) install
+[Npcap](https://npcap.com) and run in an **admin** terminal. Without Npcap, SYN
+scan degrades to TCP connect scan automatically.
 
 ---
 
-## Configuração
-
-Opcional. Copie `.gyntoolkit.example.yaml` para `.gyntoolkit.yaml` e ajuste apenas
-as chaves que quiser sobrescrever — o resto usa os defaults.
+## Quick Start
 
 ```bash
-cp .gyntoolkit.example.yaml .gyntoolkit.yaml
+python -m gyntoolkit     # run from source
+# or, after `pip install -e .`
+gyntoolkit
 ```
 
-Ordem de resolução: caminho em `GYNTOOLKIT_CONFIG` → `.gyntoolkit.yaml` no diretório
-atual → `.gyntoolkit.yaml` na raiz do projeto. Controla defaults de scan, workers e
-timeouts de brute/recon, diretório de export e chaves de API (reservadas).
-
-## Relatórios
-
-Após scans e consultas de recon, a CLI oferece exportar o resultado em **JSON** ou
-**relatório HTML** (tema dark). Arquivos vão para `reports/<módulo>-<timestamp>.<fmt>`
-(configurável em `export.dir`; `export.auto: true` exporta sem perguntar).
+An interactive dark CLI opens with a numbered menu. Commands are entered at the
+`gyntoolkit:~#` prompt. Output degrades gracefully to plain colored text if
+[`rich`](https://github.com/Textualize/rich) is not installed.
 
 ---
 
-## Módulos
+## Example
 
-### `[1]` Obter Informações — recon passivo e ativo
+Target: the **local security lab** (never a third-party system).
 
-| # | Módulo | Fonte / técnica |
-|---|--------|-----------------|
-| 1 | **WHOIS** | `python-whois` — registrar, datas, contatos |
-| 2 | **DNS Lookup** | `dnspython` — A, AAAA, MX, NS, CNAME, TXT, SOA |
-| 3 | **Geolocalização IP** | `ip-api.com` (free) — país, ISP, ASN, flags proxy/hosting |
-| 4 | **Reverse DNS (PTR)** | `socket.gethostbyaddr` |
-| 5 | **Subdomain Enum** | Certificate Transparency via `crt.sh` |
-| 6 | **SSL/TLS Cert Inspector** | `cryptography` — subject, issuer, SANs, expiry, cipher, SHA-256 |
-| 7 | **HTTP Fingerprint** | Detecta nginx, Apache, IIS, Cloudflare, PHP, WordPress, Laravel, ASP.NET, Django, Rails, Node |
-| 8 | **InternetDB (Shodan free)** | Portas abertas, CPEs, CVEs conhecidos — sem API key |
-| 9 | **HIBP Breach Check** | Domínio → breaches conhecidos via Have I Been Pwned |
-| 10 | **MAC Vendor Lookup** | `api.macvendors.com` — OUI → fabricante |
-| 11 | **Traceroute TCP** | `scapy` — hops + RTT (requer privilégio) |
+```bash
+# 1. Launch GynToolkit
+python -m gyntoolkit
 
-### `[2]` Brute Force
+# 2. Pick [3] Advanced Scanning → scan 127.0.0.1
+# 3. Inspect discovered services / banners
+# 4. When prompted, export the result as JSON or HTML report
+```
 
-| # | Módulo | Detalhes |
-|---|--------|----------|
-| 1 | **CUPP wordlist** | Wrapper para `cupp.py -i` — gerador personalizado |
-| 2 | **SSH brute** | `paramiko` async via `asyncio.to_thread`, `Semaphore` p/ concorrência, delay |
-| 3 | **HTTP brute** | `aiohttp` — Basic Auth ou form POST com `fail_signature` configurável |
-
-> Todo ataque exige confirmação explícita digitando `AUTORIZO` — sem bypass silencioso.
-
-### `[3]` Varredura Avançada
-
-- **Port scan** rápido (Top 21 portas comuns) ou completo (1–65535)
-- **SYN scan** stealth quando roda com privilégio, fallback para **TCP connect**
-- **Banner grabbing** async paralelo
-- **Análise CVE** por serviço via **NVD API v2.0**
-- **Descoberta de hosts ativos** (ARP scan) com CIDR — `192.168.0.0/24`
-- Classificação automática de risco (Alto/Baixo) baseada em CVEs encontrados
-
-### `[4]` Utilitários
-
-| # | Módulo | Detalhes |
-|---|--------|----------|
-| 1 | **Hash de texto** | MD5, SHA1, SHA256, SHA512 |
-| 2 | **Hash de arquivo** | Streaming (não carrega tudo em memória) |
-| 3 | **Base64 encode** | UTF-8 → base64 |
-| 4 | **Base64 decode** | Base64 → UTF-8 com auto-padding |
-| 5 | **JWT decode** | Header + payload sem verificar assinatura |
-
----
-
-## Lab local de testes
-
-O diretório `lab/` traz um ambiente **isolado em 127.0.0.1** para validar os módulos
-de brute-force sem tocar em alvos reais — sem Docker, sem VM.
-
-**Rodada completa automatizada:**
+To exercise the brute-force modules end to end against local mocks:
 
 ```bash
 python lab/run_e2e.py
 ```
 
-Sobe mocks SSH (paramiko em `:2222`) e HTTP (aiohttp em `:8080`), executa
-`ssh_bruteforce` + `http_bruteforce` (Basic + Form), valida credenciais
-encontradas contra o esperado, encerra tudo. Exit code `0` = tudo verde.
-
-Ver **`lab/README.md`** para passo-a-passo manual de cada laboratório (SSH, HTTP Basic, HTTP Form).
+See [Security Lab](#security-lab) below.
 
 ---
 
-## Estrutura
+## Security Lab
 
-```
-gyntoolkit/
-├── gyntoolkit/           # pacote Python (rode com `python -m gyntoolkit`)
-│   ├── __init__.py       # re-exporta API pública (compat + entry point)
-│   ├── __main__.py       # habilita `python -m gyntoolkit`
-│   ├── core.py           # constantes, logging, helpers de terminal/menu
-│   ├── scan.py           # port scan, banner, CVE lookup, host discovery
-│   ├── recon.py          # WHOIS, DNS, geo, TLS, fingerprint, breaches, traceroute
-│   ├── brute.py          # aviso ético, wordlists, CUPP, SSH e HTTP brute
-│   ├── utils.py          # hash, base64, JWT decode
-│   ├── config.py         # loader do .gyntoolkit.yaml (deep-merge sobre defaults)
-│   ├── export.py         # export JSON + relatório HTML
-│   ├── ui.py             # camada rich (tabelas/painéis) com fallback colorama
-│   └── cli.py            # fluxo interativo (menu) + ponto de entrada
-├── pyproject.toml        # build system + deps + ruff config
-├── requirements.txt      # deps pinadas
-├── .gyntoolkit.example.yaml  # config de exemplo
-├── reports/              # relatórios exportados (gitignored)
-├── cupp/                 # gerador de wordlist customizada (opcional)
-├── lab/                  # ambiente de testes local
-│   ├── README.md
-│   ├── mock_ssh_server.py
-│   ├── mock_http_server.py
-│   ├── run_e2e.py
-│   └── wordlists/
-├── gyntoolkit.log        # log runtime (gitignored)
-├── LICENSE
-└── README.md
+The project includes a local lab so you can test GynToolkit **without targeting
+external systems** — no Docker, no VMs.
+
+```text
+GynToolkit  →  Security Lab  →  127.0.0.1  →  Recon / Scan / Auth testing  →  Report
 ```
 
+| Service | Address | Valid credentials (intentionally weak) |
+|---------|---------|-----------------------------------------|
+| SSH mock (`paramiko`) | `127.0.0.1:2222` | `admin:hunter2`, `root:toor` |
+| HTTP mock (`aiohttp`) | `127.0.0.1:8080` | Basic `admin:letmein` · Form `admin:s3cret` |
+
+Run the full automated suite (starts mocks, attacks, validates, tears down):
+
+```bash
+python lab/run_e2e.py     # exit code 0 = all green
+```
+
+Full walkthrough: [`docs/security-lab.md`](docs/security-lab.md) and
+[`lab/README.md`](lab/README.md).
+
+> The mocks accept weak credentials **on purpose**. Run only on `127.0.0.1` and
+> never expose them on a public network.
+
 ---
 
-## Roadmap
+## Reports
 
-- [x] **v1.2** — Port scan, WHOIS, DNS lookup, NVD API v1.0
-- [x] **v2.0 Fase 1** — Fix NVD API v2.0, ARP discovery, logging estruturado
-- [x] **v2.0 Fase 2** — Geo IP, CUPP wire-in, SSH brute, HTTP brute, lab local
-- [x] **v2.0 Fase 3** — Recon avançado (crt.sh, SSL, HTTP fingerprint, InternetDB,
-      HIBP, MAC, traceroute) + Utilitários (hash, base64, JWT)
-- [x] **v2.1** — UI com `rich` (tabelas, painéis, spinners) + fallback colorama
-- [x] **v2.2** — Export resultados JSON / relatório HTML dark
-- [x] **v2.3** — Config `.gyntoolkit.yaml` (timeouts, wordlists default, API keys)
-- [x] **v2.4** — Refactor: split do monólito em pacote (`core`, `scan`, `recon`,
-      `brute`, `utils`, `cli`) — rode com `python -m gyntoolkit`
-- [ ] **v2.5** — Testes unitários (`pytest`) para recon/utils/config/export
+After scans and recon lookups, the CLI offers to export results as **JSON** or a
+dark-themed **HTML report**. Files are written to
+`reports/<module>-<timestamp>.<fmt>` (configurable via `export.dir`; set
+`export.auto: true` to export without prompting). Details in
+[`docs/reports.md`](docs/reports.md).
 
 ---
 
-## Contribuição
+## Configuration
 
-1. Fork o projeto
-2. Crie branch: `git checkout -b feature/minha-feature`
-3. Commit: `git commit -m 'feat: descrição da feature'`
-4. Push: `git push origin feature/minha-feature`
-5. Abra Pull Request
+Optional. Copy `.gyntoolkit.example.yaml` to `.gyntoolkit.yaml` and override only
+the keys you want — everything else falls back to defaults.
 
-**Estilo de commit:** Conventional Commits (`feat:`, `fix:`, `test:`, `docs:`, `chore:`).
+```bash
+cp .gyntoolkit.example.yaml .gyntoolkit.yaml
+```
 
-Guia completo (setup de dev, `ruff`, execução do lab E2E): veja [`CONTRIBUTING.md`](CONTRIBUTING.md).
-Use os templates de issue para [bugs](.github/ISSUE_TEMPLATE/bug_report.md) e [features](.github/ISSUE_TEMPLATE/feature_request.md).
+Resolution order: `GYNTOOLKIT_CONFIG` env var → `.gyntoolkit.yaml` in the current
+directory → `.gyntoolkit.yaml` in the project root. Full reference:
+[`docs/configuration.md`](docs/configuration.md).
+
+---
+
+## Documentation
+
+| Doc | Content |
+|-----|---------|
+| [`docs/installation.md`](docs/installation.md) | Install from source, editable install, PyPI publish |
+| [`docs/quickstart.md`](docs/quickstart.md) | First run, menu walkthrough |
+| [`docs/reconnaissance.md`](docs/reconnaissance.md) | Recon modules (WHOIS, DNS, TLS, fingerprint, …) |
+| [`docs/scanning.md`](docs/scanning.md) | Port scan, banners, CVE lookup, host discovery |
+| [`docs/reports.md`](docs/reports.md) | JSON / HTML report formats |
+| [`docs/configuration.md`](docs/configuration.md) | `.gyntoolkit.yaml` reference |
+| [`docs/security-lab.md`](docs/security-lab.md) | Local lab + end-to-end tests |
+| [`docs/development.md`](docs/development.md) | Dev setup, lint, tests |
+
+---
+
+## Development
+
+```bash
+git clone https://github.com/flavsjr/gyntoolkit.git
+cd gyntoolkit
+python -m venv .venv && source .venv/bin/activate   # .venv\Scripts\activate on Windows
+pip install -e ".[dev]"
+```
+
+Lint and type-check (config in `pyproject.toml`):
+
+```bash
+ruff check .
+ruff check . --fix
+mypy gyntoolkit
+```
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`docs/development.md`](docs/development.md).
+
+---
+
+## Testing
+
+Unit tests (offline — no network, no external services, no real targets):
+
+```bash
+pytest
+```
+
+End-to-end lab suite (local mocks):
+
+```bash
+python lab/run_e2e.py
+```
+
+Both run in CI on every push/PR (see the CI badge above).
+
+---
+
+## Contributing
+
+```text
+Fork → Branch → Changes → Tests → Pull Request
+```
+
+Commits follow [Conventional Commits](https://www.conventionalcommits.org/).
+Full guide (dev setup, `ruff`, running the lab): [`CONTRIBUTING.md`](CONTRIBUTING.md).
+Report bugs and request features with the
+[issue templates](.github/ISSUE_TEMPLATE/).
+
+---
+
+## Security
+
+GynToolkit is intended for **authorized** security testing, security research,
+CTFs and controlled lab environments. To report a vulnerability **in GynToolkit
+itself**, see [`SECURITY.md`](SECURITY.md) — please do not open a public issue
+for sensitive reports.
 
 ---
 
 ## Disclaimer
 
-Esta ferramenta é destinada **exclusivamente** a:
+GynToolkit is intended **exclusively** for:
 
-- Testes de segurança **autorizados por escrito**
-- Pesquisa acadêmica em ambientes controlados
-- Práticas de pentest ético (CTF, HackTheBox, TryHackMe, labs próprios)
+- Security testing **authorized in writing**
+- Academic research in controlled environments
+- Ethical pentest practice (CTF, HackTheBox, TryHackMe, your own labs)
 
-Qualquer uso em sistemas sem permissão explícita é **estritamente proibido** e
-constitui crime nas legislações da maioria dos países. Os desenvolvedores não se
-responsabilizam por uso indevido ou danos causados por esta ferramenta.
+Any use against systems or networks **without explicit authorization** is
+strictly prohibited and constitutes a crime under most jurisdictions. The authors
+are not liable for misuse or damage caused by this software.
 
 ---
 
-## Licença
+## License
 
-MIT — veja `LICENSE`.
+MIT — see [`LICENSE`](LICENSE).
 
 ---
 
 ## Star History
 
-Se o projeto te ajudou, deixe uma ⭐ — ajuda muito na visibilidade!
+If this project helped you, drop a ⭐ — it really boosts visibility!
 
 [![Star History Chart](https://api.star-history.com/svg?repos=flavsjr/gyntoolkit&type=Date)](https://star-history.com/#flavsjr/gyntoolkit&Date)

@@ -175,7 +175,7 @@ def ssl_inspect(host: str, port: int = 443, timeout: int = 8) -> dict[str, Any]:
             der = tls.getpeercert(binary_form=True)
             cipher = tls.cipher()
             version = tls.version()
-    except (socket.gaierror, socket.timeout, ConnectionRefusedError, OSError, ssl.SSLError) as e:
+    except (TimeoutError, socket.gaierror, ConnectionRefusedError, OSError, ssl.SSLError) as e:
         return {"erro": f"Falha SSL para {host}:{port}: {e}"}
 
     if not der:
