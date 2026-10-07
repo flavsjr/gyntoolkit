@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-10-07
+
 ### Fixed
 - Scan service detection: empty banners now map to the "unknown" service
   (skips a spurious NVD lookup) instead of parsing a localized placeholder word.
@@ -42,5 +44,6 @@ All notable changes to this project are documented here. The format is based on
 - `.gyntoolkit.yaml` configuration with deep-merge over defaults.
 - Local security lab (mock SSH/HTTP servers) with an end-to-end runner.
 
-[Unreleased]: https://github.com/flavsjr/gyntoolkit/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/flavsjr/gyntoolkit/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/flavsjr/gyntoolkit/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/flavsjr/gyntoolkit/releases/tag/v2.0.0
