@@ -68,9 +68,10 @@ GYNTOOLKIT_LANG=pt python -m gyntoolkit     # force Portuguese for one run
 GYNTOOLKIT_LANG=en python -m gyntoolkit     # force English
 ```
 
-Menu strings are translated today; deeper per-operation messages are being
-migrated incrementally. Add a language by extending `MESSAGES` in
-`gyntoolkit/i18n.py`.
+The full interactive surface is translated: menus, prompts, status spinners,
+result labels, table headers and error messages. Data values and JSON export
+keys stay stable (not translated). Add a language by extending `MESSAGES` in
+`gyntoolkit/i18n.py` (en/pt catalogs must share the same keys — a test enforces it).
 
 ## Notes
 

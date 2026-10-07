@@ -3,7 +3,11 @@ import base64
 import hashlib
 import json
 
-from gyntoolkit import utils
+from gyntoolkit import i18n, utils
+
+
+def _en():
+    i18n.set_lang("en")
 
 
 def test_hash_text_sha256_matches_hashlib():
@@ -23,7 +27,16 @@ def test_hash_file_streaming(tmp_path):
 
 
 def test_hash_file_missing(tmp_path):
-    assert "não encontrado" in utils.hash_file(str(tmp_path / "nope.txt"))
+    _en()
+    assert "not found" in utils.hash_file(str(tmp_path / "nope.txt")).lower()
+
+
+def test_hash_file_missing_pt(tmp_path):
+    try:
+        i18n.set_lang("pt")
+        assert "não encontrado" in utils.hash_file(str(tmp_path / "nope.txt"))
+    finally:
+        i18n.set_lang("en")
 
 
 def test_base64_roundtrip():

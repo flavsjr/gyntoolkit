@@ -15,6 +15,12 @@ def test_default_lang_is_en():
     assert i18n.DEFAULT_LANG == "en"
 
 
+def test_catalogs_have_same_keys():
+    en = set(i18n.MESSAGES["en"])
+    pt = set(i18n.MESSAGES["pt"])
+    assert en == pt, f"missing pt={en - pt} missing en={pt - en}"
+
+
 def test_set_and_get_lang():
     assert i18n.set_lang("pt") == "pt"
     assert i18n.get_lang() == "pt"

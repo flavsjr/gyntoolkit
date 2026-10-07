@@ -7,6 +7,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from . import i18n
+
 
 def hash_text(data: str, algo: str = "sha256") -> str:
     """Hash de string (md5/sha1/sha256/sha512)."""
@@ -19,7 +21,7 @@ def hash_file(path: str, algo: str = "sha256") -> str:
     """Hash de arquivo (stream, sem carregar tudo na memória)."""
     p = Path(path).expanduser()
     if not p.is_file():
-        return f"Arquivo não encontrado: {p}"
+        return i18n.t("utils.file_not_found", path=p)
     h = hashlib.new(algo)
     with p.open("rb") as f:
         for chunk in iter(lambda: f.read(65536), b""):
@@ -37,14 +39,14 @@ def b64_decode(data: str) -> str:
         padded = data + "=" * (-len(data) % 4)
         return base64.b64decode(padded).decode("utf-8", errors="replace")
     except (ValueError, TypeError) as e:
-        return f"Erro decode: {e}"
+        return i18n.t("utils.decode_err", err=e)
 
 
 def jwt_decode(token: str) -> dict[str, Any]:
     """Decodifica JWT sem verificar assinatura."""
     parts = token.split(".")
     if len(parts) != 3:
-        return {"erro": "JWT deve ter 3 partes (header.payload.signature)"}
+        return {"erro": i18n.t("utils.jwt_parts")}
 
     def _decode_part(part: str) -> dict[str, Any]:
         padded = part + "=" * (-len(part) % 4)
@@ -56,4 +58,4 @@ def jwt_decode(token: str) -> dict[str, Any]:
         payload = _decode_part(parts[1])
         return {"header": header, "payload": payload, "signature": parts[2]}
     except (ValueError, json.JSONDecodeError) as e:
-        return {"erro": f"JWT malformado: {e}"}
+        return {"erro": i18n.t("utils.jwt_malformed", err=e)}

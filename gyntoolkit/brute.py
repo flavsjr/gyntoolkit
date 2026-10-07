@@ -16,11 +16,11 @@ from .core import PROJECT_ROOT, log
 def print_ethical_warning(action: str) -> bool:
     """Alerta ético antes de operação intrusiva. Retorna True se autorizado."""
     print(f"\n{Fore.RED}{'=' * 60}{Style.RESET_ALL}")
-    print(f"{Fore.RED}[!] AVISO: {action} é ataque ativo.{Style.RESET_ALL}")
-    print(f"{Fore.RED}[!] Use apenas em alvos com autorização por escrito.{Style.RESET_ALL}")
-    print(f"{Fore.RED}[!] Uso não autorizado é crime (Lei 12.737/12, CFAA, etc).{Style.RESET_ALL}")
+    print(f"{Fore.RED}{i18n.t('brute.warn_active', action=action)}{Style.RESET_ALL}")
+    print(f"{Fore.RED}{i18n.t('brute.warn_authorized')}{Style.RESET_ALL}")
+    print(f"{Fore.RED}{i18n.t('brute.warn_crime')}{Style.RESET_ALL}")
     print(f"{Fore.RED}{'=' * 60}{Style.RESET_ALL}")
-    confirm = input(f"{Fore.YELLOW}Confirmar autorização? (digite 'AUTORIZO'): {Style.RESET_ALL}").strip()
+    confirm = input(f"{Fore.YELLOW}{i18n.t('brute.confirm')}{Style.RESET_ALL}").strip()
     return confirm == "AUTORIZO"
 
 
@@ -28,7 +28,7 @@ def load_wordlist(path: str) -> list[str]:
     """Carrega wordlist do disco, deduplicando e ignorando linhas vazias."""
     p = Path(path).expanduser()
     if not p.is_file():
-        print(f"{Fore.RED}Wordlist não encontrada: {p}{Style.RESET_ALL}")
+        print(f"{Fore.RED}{i18n.t('brute.wordlist_not_found', path=p)}{Style.RESET_ALL}")
         return []
     try:
         with p.open("r", encoding="utf-8", errors="ignore") as f:
@@ -47,7 +47,7 @@ def cupp_generate() -> None:
     ]
     cupp = next((p for p in cupp_paths if p.is_file()), None)
     if not cupp:
-        print(f"{Fore.RED}CUPP não encontrado. Clone: git clone https://github.com/Mebus/cupp.git{Style.RESET_ALL}")
+        print(f"{Fore.RED}{i18n.t('brute.cupp_not_found')}{Style.RESET_ALL}")
         return
 
     python_exe = shutil.which("python") or shutil.which("python3") or sys.executable
@@ -55,7 +55,7 @@ def cupp_generate() -> None:
         subprocess.run([python_exe, str(cupp), "-i"], check=False)
     except OSError as e:
         log.error("CUPP execução falhou: %s", e)
-        print(f"{Fore.RED}Erro ao rodar CUPP: {e}{Style.RESET_ALL}")
+        print(f"{Fore.RED}{i18n.t('brute.cupp_err', err=e)}{Style.RESET_ALL}")
 
 
 async def _ssh_try(host: str, port: int, user: str, password: str, timeout: int) -> tuple[str, str] | None:
@@ -97,7 +97,7 @@ async def ssh_bruteforce(
     try:
         import paramiko  # noqa: F401
     except ImportError:
-        print(f"{Fore.RED}paramiko não instalado. Rode: pip install paramiko{Style.RESET_ALL}")
+        print(f"{Fore.RED}{i18n.t('brute.paramiko_missing')}{Style.RESET_ALL}")
         return []
 
     sem = asyncio.Semaphore(workers)
@@ -138,7 +138,7 @@ async def http_bruteforce(
     try:
         import aiohttp
     except ImportError:
-        print(f"{Fore.RED}aiohttp não instalado. Rode: pip install aiohttp{Style.RESET_ALL}")
+        print(f"{Fore.RED}{i18n.t('brute.aiohttp_missing')}{Style.RESET_ALL}")
         return []
 
     sem = asyncio.Semaphore(workers)

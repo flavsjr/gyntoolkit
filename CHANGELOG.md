@@ -6,10 +6,17 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Fixed
+- Scan service detection: empty banners now map to the "unknown" service
+  (skips a spurious NVD lookup) instead of parsing a localized placeholder word.
+
 ### Added
-- i18n: interactive menus in English or Portuguese via `gyntoolkit/i18n.py`
+- i18n: full interactive UI in English or Portuguese via `gyntoolkit/i18n.py`
   (dict catalog). Language resolves from `ui.lang` config → `GYNTOOLKIT_LANG`
-  env → OS locale → English default. Menu strings translated (phase 1).
+  env → OS locale → English default. Translated: menus, prompts, status
+  spinners, result labels, table headers, and error messages across cli/recon/
+  scan/brute/utils. Data values and JSON export keys stay stable. A test enforces
+  en/pt key parity.
 - English `README.md` (primary) with `README.pt-BR.md` kept in Portuguese.
 - `docs/` guides: installation, quickstart, reconnaissance, scanning, reports,
   configuration, security-lab, development.
