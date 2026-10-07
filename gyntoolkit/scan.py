@@ -10,6 +10,7 @@ import requests
 from colorama import Fore, Style
 from scapy.all import ARP, IP, TCP, Ether, sr1, srp
 
+from . import i18n
 from .core import TOP_PORTS, is_admin_windows, log
 
 
@@ -61,7 +62,7 @@ async def get_banner(target: str, port: int) -> tuple[int, str]:
         return (port, banner.decode(errors='ignore').strip())
     except (asyncio.TimeoutError, ConnectionRefusedError, OSError) as e:
         log.debug("banner %s:%s vazio: %s", target, port, e)
-        return (port, "Nenhum banner identificado")
+        return (port, "")
 
 def check_vulnerabilities(service: str) -> list[str]:
     """Consulta NVD API 2.0 por CVEs associados ao serviço."""
@@ -87,7 +88,7 @@ def network_discovery(cidr: str, timeout: int = 2) -> list[str]:
         ipaddress.ip_network(cidr, strict=False)
     except ValueError as e:
         log.error("CIDR inválido '%s': %s", cidr, e)
-        print(f"{Fore.RED}CIDR inválido: {e}{Style.RESET_ALL}")
+        print(f"{Fore.RED}{i18n.t('scan.cidr_invalid', err=e)}{Style.RESET_ALL}")
         return []
 
     try:
@@ -97,11 +98,11 @@ def network_discovery(cidr: str, timeout: int = 2) -> list[str]:
         hosts = sorted({r.psrc for _, r in answered}, key=lambda ip: ipaddress.ip_address(ip))
         return hosts
     except PermissionError:
-        print(f"{Fore.RED}ARP scan requer privilégio root/admin.{Style.RESET_ALL}")
+        print(f"{Fore.RED}{i18n.t('scan.arp_priv')}{Style.RESET_ALL}")
         return []
     except OSError as e:
         log.error("ARP scan falhou: %s", e)
-        print(f"{Fore.RED}Falha no ARP scan: {e}{Style.RESET_ALL}")
+        print(f"{Fore.RED}{i18n.t('scan.arp_fail', err=e)}{Style.RESET_ALL}")
         return []
 
 async def perform_scan(target: str, scan_type: str) -> dict[int, dict]:

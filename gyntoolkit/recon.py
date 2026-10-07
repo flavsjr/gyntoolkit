@@ -14,6 +14,7 @@ import whois
 from colorama import Fore, Style
 from scapy.all import IP, TCP, sr1
 
+from . import i18n
 from .core import PROMPT, log, sanitize_input
 
 
@@ -23,7 +24,7 @@ def whois_lookup(domain: str):
         domain = sanitize_input(domain, r"[A-Za-z0-9.-]")
         return whois.whois(domain)
     except Exception as e:
-        return f"Erro na consulta WHOIS: {str(e)}"
+        return i18n.t("recon.whois_err", err=e)
 
 def dns_lookup(domain: str,
                record_type: str = "A",
@@ -45,18 +46,18 @@ def dns_lookup(domain: str,
         answers = resolver.resolve(domain, record_type)
         return [rdata.to_text() for rdata in answers]
     except dns.resolver.NoAnswer:
-        return [f"No {record_type} record found for {domain}"]
+        return [i18n.t("dns.no_record", t=record_type, d=domain)]
     except dns.resolver.NXDOMAIN:
-        return [f"Domain {domain} does not exist"]
+        return [i18n.t("dns.nxdomain", d=domain)]
     except Exception as e:
-        return [f"Error: {e}"]
+        return [i18n.t("dns.error", err=e)]
 
 def geo_ip(target: str) -> dict[str, str]:
     """Geolocalização de IP/host via ip-api.com (free tier, sem key)."""
     try:
         ip = socket.gethostbyname(target)
     except socket.gaierror as e:
-        return {"erro": f"Falha ao resolver {target}: {e}"}
+        return {"erro": i18n.t("recon.resolve_fail", t=target, err=e)}
 
     fields = "status,message,continent,country,regionName,city,zip,lat,lon,timezone,isp,org,as,reverse,mobile,proxy,hosting,query"
     try:
@@ -69,7 +70,7 @@ def geo_ip(target: str) -> dict[str, str]:
         response.raise_for_status()
         data = response.json()
         if data.get("status") != "success":
-            return {"erro": data.get("message", "Consulta falhou")}
+            return {"erro": data.get("message", i18n.t("recon.query_failed"))}
         return data
     except (requests.RequestException, ValueError) as e:
         log.warning("geo_ip %s falhou: %s", target, e)
@@ -84,13 +85,13 @@ def reverse_dns(ip: str) -> dict[str, Any]:
         try:
             ip = socket.gethostbyname(ip)
         except socket.gaierror as e:
-            return {"erro": f"Falha ao resolver {ip}: {e}"}
+            return {"erro": i18n.t("recon.resolve_fail", t=ip, err=e)}
     try:
         hostname, aliases, addrs = socket.gethostbyaddr(ip)
         return {"ip": ip, "hostname": hostname, "aliases": aliases, "addrs": addrs}
     except socket.herror as e:
         log.debug("reverse_dns %s falhou: %s", ip, e)
-        return {"ip": ip, "erro": f"Sem PTR: {e}"}
+        return {"ip": ip, "erro": i18n.t("recon.no_ptr", err=e)}
 
 
 def subdomain_enum(domain: str, timeout: int = 30) -> list[str]:
@@ -176,16 +177,16 @@ def ssl_inspect(host: str, port: int = 443, timeout: int = 8) -> dict[str, Any]:
             cipher = tls.cipher()
             version = tls.version()
     except (TimeoutError, socket.gaierror, ConnectionRefusedError, OSError, ssl.SSLError) as e:
-        return {"erro": f"Falha SSL para {host}:{port}: {e}"}
+        return {"erro": i18n.t("recon.ssl_fail", h=host, p=port, err=e)}
 
     if not der:
-        return {"erro": "Peer não enviou certificado"}
+        return {"erro": i18n.t("recon.no_cert")}
 
     try:
         parsed = _parse_cert_der(der)
     except Exception as e:
         log.warning("Falha ao parsear cert DER: %s", e)
-        return {"erro": f"Falha ao parsear cert: {e}"}
+        return {"erro": i18n.t("recon.cert_parse_fail", err=e)}
 
     parsed.update({
         "host": host,
@@ -223,7 +224,7 @@ def http_fingerprint(url: str, timeout: int = 10) -> dict[str, Any]:
             verify=False,
         )
     except requests.RequestException as e:
-        return {"erro": f"Falha HTTP: {e}"}
+        return {"erro": i18n.t("recon.http_fail", err=e)}
 
     headers = dict(response.headers)
     body_snippet = response.text[:8192]
@@ -254,7 +255,7 @@ def internetdb_lookup(ip: str, timeout: int = 10) -> dict[str, Any]:
         try:
             ip = socket.gethostbyname(ip)
         except socket.gaierror as e:
-            return {"erro": f"Falha ao resolver: {e}"}
+            return {"erro": i18n.t("recon.resolve_fail_simple", err=e)}
     try:
         response = requests.get(
             f"https://internetdb.shodan.io/{ip}",
@@ -262,7 +263,7 @@ def internetdb_lookup(ip: str, timeout: int = 10) -> dict[str, Any]:
             timeout=timeout,
         )
         if response.status_code == 404:
-            return {"ip": ip, "info": "Sem dados no InternetDB"}
+            return {"ip": ip, "info": i18n.t("recon.internetdb_nodata")}
         response.raise_for_status()
         return response.json()
     except (requests.RequestException, ValueError) as e:
@@ -292,14 +293,14 @@ def mac_vendor(mac: str, timeout: int = 6) -> str:
     """Lookup fabricante via api.macvendors.com (free, no key)."""
     mac = mac.strip().replace("-", ":").upper()
     if not re.fullmatch(r"([0-9A-F]{2}:){5}[0-9A-F]{2}", mac):
-        return f"MAC inválido: {mac}"
+        return i18n.t("recon.mac_invalid", mac=mac)
     try:
         response = requests.get(f"https://api.macvendors.com/{mac}", timeout=timeout)
         if response.status_code == 200:
             return response.text.strip()
-        return f"Não encontrado (HTTP {response.status_code})"
+        return i18n.t("recon.not_found_http", code=response.status_code)
     except requests.RequestException as e:
-        return f"Erro: {e}"
+        return i18n.t("recon.error", err=e)
 
 
 def traceroute(target: str, max_hops: int = 20, timeout: int = 3, dport: int = 80) -> list[dict[str, Any]]:
@@ -307,7 +308,7 @@ def traceroute(target: str, max_hops: int = 20, timeout: int = 3, dport: int = 8
     try:
         target_ip = socket.gethostbyname(target)
     except socket.gaierror as e:
-        return [{"erro": f"Falha ao resolver: {e}"}]
+        return [{"erro": i18n.t("recon.resolve_fail_simple", err=e)}]
 
     hops = []
     for ttl in range(1, max_hops + 1):
@@ -316,9 +317,9 @@ def traceroute(target: str, max_hops: int = 20, timeout: int = 3, dport: int = 8
         try:
             reply = sr1(pkt, timeout=timeout, verbose=0)
         except PermissionError:
-            return [{"erro": "traceroute requer privilégio root/admin"}]
+            return [{"erro": i18n.t("recon.traceroute_priv")}]
         except OSError as e:
-            return [{"erro": f"scapy: {e}"}]
+            return [{"erro": i18n.t("recon.scapy_err", err=e)}]
         rtt_ms = (datetime.now(timezone.utc) - start).total_seconds() * 1000
 
         if reply is None:
@@ -345,10 +346,10 @@ DNS_TYPES = [
 
 def escolher_tipo_dns() -> str:
     """Mostra menu e retorna o tipo DNS escolhido"""
-    print(f"\n{Fore.CYAN}Selecione o tipo de registro DNS:{Style.RESET_ALL}")
-    for idx, (tipo, desc) in enumerate(DNS_TYPES, 1):
-        print(f" {Fore.YELLOW}[{idx}]{Style.RESET_ALL} {tipo} → {desc}")
-    print(f" {Fore.YELLOW}[0]{Style.RESET_ALL} Voltar")
+    print(f"\n{Fore.CYAN}{i18n.t('dns.select')}{Style.RESET_ALL}")
+    for idx, (tipo, _desc) in enumerate(DNS_TYPES, 1):
+        print(f" {Fore.YELLOW}[{idx}]{Style.RESET_ALL} {tipo} → {i18n.t(f'dns.desc.{tipo}')}")
+    print(f" {Fore.YELLOW}[0]{Style.RESET_ALL} {i18n.t('dns.back')}")
 
     while True:
         try:
@@ -360,4 +361,4 @@ def escolher_tipo_dns() -> str:
             else:
                 raise ValueError
         except ValueError:
-            print(f"{Fore.RED}Escolha inválida. Tente novamente.{Style.RESET_ALL}")
+            print(f"{Fore.RED}{i18n.t('dns.invalid')}{Style.RESET_ALL}")
