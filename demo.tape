@@ -12,6 +12,9 @@
 
 Output docs/demo.gif
 
+# ---- Idioma da UI em inglês para o demo ----
+Env GYNTOOLKIT_LANG "en"
+
 # ---- Aparência (tema dark, estética gyntoolkit:~#) ----
 Set Shell        "bash"
 Set FontSize     18

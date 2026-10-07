@@ -233,6 +233,10 @@ Resolution order: `GYNTOOLKIT_CONFIG` env var → `.gyntoolkit.yaml` in the curr
 directory → `.gyntoolkit.yaml` in the project root. Full reference:
 [`docs/configuration.md`](docs/configuration.md).
 
+**UI language:** menus run in English or Portuguese. Set `ui.lang: auto|en|pt`
+in the config, or `GYNTOOLKIT_LANG=pt` / `=en` per run; `auto` detects the OS
+locale and falls back to English.
+
 ---
 
 ## Documentation

@@ -22,6 +22,9 @@ The first existing file wins.
 ## Keys (defaults)
 
 ```yaml
+ui:
+  lang: "auto"                # UI language: auto | en | pt
+
 scan:
   default_type: "rápido"      # "rápido" (fast) or "completo" (full)
 
@@ -50,6 +53,24 @@ api_keys:
   hibp: ""                    # reserved — current endpoints are public/free
   shodan: ""
 ```
+
+## UI language (i18n)
+
+The interactive menus can run in **English** or **Portuguese**. Resolution order:
+
+1. `ui.lang` in `.gyntoolkit.yaml` (when not `auto`).
+2. `GYNTOOLKIT_LANG` environment variable.
+3. OS locale (`$LANG` / `locale`).
+4. Fallback: `en`.
+
+```bash
+GYNTOOLKIT_LANG=pt python -m gyntoolkit     # force Portuguese for one run
+GYNTOOLKIT_LANG=en python -m gyntoolkit     # force English
+```
+
+Menu strings are translated today; deeper per-operation messages are being
+migrated incrementally. Add a language by extending `MESSAGES` in
+`gyntoolkit/i18n.py`.
 
 ## Notes
 

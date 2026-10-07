@@ -44,6 +44,9 @@ DEFAULTS: dict[str, Any] = {
         "auto": False,              # exportar sem perguntar
         "format": "json",           # formato default quando auto=True: json|html
     },
+    "ui": {
+        "lang": "auto",             # idioma da UI: auto | en | pt
+    },
     "api_keys": {
         "hibp": "",                 # reservado (endpoints atuais são públicos)
         "shodan": "",

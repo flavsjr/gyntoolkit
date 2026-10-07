@@ -9,6 +9,8 @@ from pathlib import Path
 
 from colorama import Fore, Style, init
 
+from . import i18n
+
 # Raiz do projeto (um nível acima do pacote) — usada p/ localizar cupp/, etc.
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
@@ -73,7 +75,7 @@ def show_menu(title: str, options: list) -> int:
         print(f"\n{Fore.CYAN}{title}{Style.RESET_ALL}")
         for idx, opt in enumerate(options, 1):
             print(f" {Fore.YELLOW}[{idx}]{Style.RESET_ALL} {opt}")
-        print(f" {Fore.YELLOW}[0]{Style.RESET_ALL} Voltar/Sair")
+        print(f" {Fore.YELLOW}[0]{Style.RESET_ALL} {i18n.t('common.back_exit')}")
 
         try:
             choice = int(input(f"\n{PROMPT}"))
@@ -81,4 +83,4 @@ def show_menu(title: str, options: list) -> int:
                 return choice
             raise ValueError
         except ValueError:
-            print(f"\n{Fore.RED}Opção inválida! Tente novamente.{Style.RESET_ALL}")
+            print(f"\n{Fore.RED}{i18n.t('common.invalid_option')}{Style.RESET_ALL}")

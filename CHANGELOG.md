@@ -7,6 +7,9 @@ All notable changes to this project are documented here. The format is based on
 ## [Unreleased]
 
 ### Added
+- i18n: interactive menus in English or Portuguese via `gyntoolkit/i18n.py`
+  (dict catalog). Language resolves from `ui.lang` config → `GYNTOOLKIT_LANG`
+  env → OS locale → English default. Menu strings translated (phase 1).
 - English `README.md` (primary) with `README.pt-BR.md` kept in Portuguese.
 - `docs/` guides: installation, quickstart, reconnaissance, scanning, reports,
   configuration, security-lab, development.

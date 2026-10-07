@@ -1,6 +1,6 @@
 """
-E2E automatizado: sobe mocks, ataca com gyntoolkit, valida credenciais, encerra.
-Rode a partir da raiz do projeto: python lab/run_e2e.py
+Automated E2E: starts mocks, attacks with gyntoolkit, validates creds, tears down.
+Run from the project root: python lab/run_e2e.py
 """
 import asyncio
 import subprocess
@@ -22,7 +22,7 @@ EXPECTED_HTTP_FORM = {("admin", "s3cret")}
 
 
 def start_mock(name: str, script: str) -> subprocess.Popen:
-    print(f"[E2E] Iniciando {name}...")
+    print(f"[E2E] Starting {name}...")
     proc = subprocess.Popen(
         [sys.executable, str(ROOT / "lab" / script)],
         stdout=subprocess.DEVNULL,
@@ -41,9 +41,9 @@ async def run_tests() -> int:
     )
     ssh_set = set(ssh_results)
     if ssh_set == EXPECTED_SSH:
-        print(f"[E2E] [OK] SSH PASS — encontrou {ssh_set}")
+        print(f"[E2E] [OK] SSH PASS — found {ssh_set}")
     else:
-        print(f"[E2E] [FAIL] SSH FAIL — esperava {EXPECTED_SSH}, achou {ssh_set}")
+        print(f"[E2E] [FAIL] SSH FAIL — expected {EXPECTED_SSH}, got {ssh_set}")
         failures += 1
 
     # Teste 2: HTTP basic
@@ -54,9 +54,9 @@ async def run_tests() -> int:
     )
     http_basic_set = set(http_basic)
     if http_basic_set == EXPECTED_HTTP_BASIC:
-        print(f"[E2E] [OK] HTTP basic PASS — encontrou {http_basic_set}")
+        print(f"[E2E] [OK] HTTP basic PASS — found {http_basic_set}")
     else:
-        print(f"[E2E] [FAIL] HTTP basic FAIL — esperava {EXPECTED_HTTP_BASIC}, achou {http_basic_set}")
+        print(f"[E2E] [FAIL] HTTP basic FAIL — expected {EXPECTED_HTTP_BASIC}, got {http_basic_set}")
         failures += 1
 
     # Teste 3: HTTP form
@@ -68,9 +68,9 @@ async def run_tests() -> int:
     )
     http_form_set = set(http_form)
     if http_form_set == EXPECTED_HTTP_FORM:
-        print(f"[E2E] [OK] HTTP form PASS — encontrou {http_form_set}")
+        print(f"[E2E] [OK] HTTP form PASS — found {http_form_set}")
     else:
-        print(f"[E2E] [FAIL] HTTP form FAIL — esperava {EXPECTED_HTTP_FORM}, achou {http_form_set}")
+        print(f"[E2E] [FAIL] HTTP form FAIL — expected {EXPECTED_HTTP_FORM}, got {http_form_set}")
         failures += 1
 
     return failures
@@ -80,13 +80,13 @@ def main() -> int:
     ssh_proc = start_mock("SSH mock", "mock_ssh_server.py")
     http_proc = start_mock("HTTP mock", "mock_http_server.py")
 
-    print("[E2E] Aguardando 3s para servidores subirem...")
+    print("[E2E] Waiting 3s for servers to come up...")
     time.sleep(3)
 
     try:
         failures = asyncio.run(run_tests())
     finally:
-        print("\n[E2E] Encerrando mocks...")
+        print("\n[E2E] Shutting down mocks...")
         for proc in (ssh_proc, http_proc):
             proc.terminate()
             try:
@@ -95,9 +95,9 @@ def main() -> int:
                 proc.kill()
 
     if failures:
-        print(f"\n[E2E] {failures} FALHA(S). [FAIL]")
+        print(f"\n[E2E] {failures} FAILURE(S). [FAIL]")
         return 1
-    print("\n[E2E] TODOS OS TESTES PASSARAM. [OK]")
+    print("\n[E2E] ALL TESTS PASSED. [OK]")
     return 0
 
 
