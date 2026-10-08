@@ -161,6 +161,14 @@ Run it **always** before opening a PR that touches `brute`, `scan`, or the core.
 pytest
 ```
 
+Tests are offline (no network, no real targets). CI enforces a coverage gate on
+the core logic (display layers `cli.py`/`ui.py` are excluded, exercised by the
+e2e lab). Check it locally:
+
+```bash
+pytest --cov=gyntoolkit --cov-report=term-missing --cov-fail-under=60
+```
+
 ---
 
 ## Opening the Pull Request
