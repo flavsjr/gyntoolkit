@@ -29,6 +29,7 @@ from .recon import (
     internetdb_lookup,
     mac_vendor,
     reverse_dns,
+    shodan_host,
     ssl_inspect,
     subdomain_enum,
     traceroute,
@@ -118,6 +119,7 @@ async def main_flow():
                 i18n.t("menu.info.traceroute"),
                 i18n.t("menu.info.axfr"),
                 i18n.t("menu.info.webscan"),
+                i18n.t("menu.info.shodan"),
             ])
 
             if sub_choice == 1:
@@ -301,6 +303,19 @@ async def main_flow():
                     ui.print_table(i18n.t("label.webscan", u=r["base"], n=r["total"]),
                                    i18n.t("table.webscan").split("|"), rows)
                     _offer_export(r, f"webscan-{url}", f"Web Discovery {url}")
+
+            elif sub_choice == 14:
+                target = sanitize_input(input(_cyan("prompt.ip_or_domain")), r"[A-Za-z0-9.:-]")
+                key = CONFIG.get("api_keys", {}).get("shodan", "")
+                with ui.status(i18n.t("status.shodan", t=target)):
+                    info = shodan_host(target, api_key=key)
+                if "erro" in info:
+                    ui.error(info["erro"])
+                elif "info" in info:
+                    ui.notice(info["info"])
+                else:
+                    ui.print_kv(i18n.t("label.shodan", t=target), info)
+                    _offer_export(info, f"shodan-{target}", f"Shodan {target}")
 
         elif choice == 2:  # Brute Force
             b = CONFIG["brute"]

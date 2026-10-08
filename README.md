@@ -83,6 +83,7 @@
 | 11 | **Traceroute (TCP)** | `scapy` — hops + RTT (needs privilege) |
 | 12 | **DNS Zone Transfer (AXFR)** | `dnspython` — tries AXFR against each authoritative NS |
 | 13 | **Web Content Discovery** | `aiohttp` — robots.txt / sitemap / security.txt + built-in path wordlist |
+| 14 | **Shodan Host** | Full `api.shodan.io` host lookup (ports, CPEs, CVEs, tags) — needs `api_keys.shodan`; falls back to InternetDB hint without a key |
 
 ### `[2]` Brute Force
 
@@ -175,6 +176,7 @@ Pass a subcommand to run a single action and print the result as JSON on stdout
 gyntoolkit recon dns example.com --type MX        # DNS lookup
 gyntoolkit recon axfr example.com                 # zone transfer attempt
 gyntoolkit recon webscan http://example.com       # web content discovery
+gyntoolkit recon shodan 1.1.1.1                   # Shodan host (needs api_keys.shodan)
 gyntoolkit recon ssl example.com --port 443       # TLS cert
 gyntoolkit scan 127.0.0.1 --type fast             # port scan + CVEs
 gyntoolkit scan 192.168.0.0/24                    # host discovery (CIDR)

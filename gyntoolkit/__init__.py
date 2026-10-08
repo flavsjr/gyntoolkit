@@ -41,6 +41,7 @@ from .recon import (
     internetdb_lookup,
     mac_vendor,
     reverse_dns,
+    shodan_host,
     ssl_inspect,
     subdomain_enum,
     traceroute,
@@ -71,8 +72,8 @@ __all__ = [
     # recon
     "whois_lookup", "dns_lookup", "geo_ip", "reverse_dns", "subdomain_enum",
     "ssl_inspect", "http_fingerprint", "internetdb_lookup", "hibp_breaches",
-    "mac_vendor", "traceroute", "zone_transfer", "escolher_tipo_dns",
-    "DNS_TYPES", "TECH_SIGNATURES",
+    "mac_vendor", "traceroute", "zone_transfer", "shodan_host",
+    "escolher_tipo_dns", "DNS_TYPES", "TECH_SIGNATURES",
     # web discovery
     "web_discovery", "COMMON_PATHS",
     # wordlist

@@ -312,6 +312,66 @@ def internetdb_lookup(ip: str, timeout: int = 10) -> dict[str, Any]:
         return {"erro": str(e)}
 
 
+def _summarize_shodan(raw: dict[str, Any]) -> dict[str, Any]:
+    """Resume a resposta /shodan/host do Shodan em campos estáveis p/ exibição."""
+    services = []
+    for item in raw.get("data", []):
+        services.append({
+            "port": item.get("port"),
+            "transport": item.get("transport"),
+            "product": item.get("product"),
+            "version": item.get("version"),
+            "cpe": item.get("cpe") or item.get("cpe23"),
+        })
+    services.sort(key=lambda s: (s.get("port") or 0))
+    return {
+        "ip": raw.get("ip_str"),
+        "org": raw.get("org"),
+        "isp": raw.get("isp"),
+        "asn": raw.get("asn"),
+        "os": raw.get("os"),
+        "country": raw.get("country_name"),
+        "hostnames": raw.get("hostnames", []),
+        "ports": sorted(raw.get("ports", [])),
+        "tags": raw.get("tags", []),
+        "vulns": sorted(raw.get("vulns", [])) if raw.get("vulns") else [],
+        "services": services,
+        "last_update": raw.get("last_update"),
+    }
+
+
+def shodan_host(ip: str, api_key: str = "", timeout: int = 10) -> dict[str, Any]:
+    """Consulta /shodan/host/{ip} na API do Shodan (requer API key).
+
+    Sem key, retorna erro orientando o módulo InternetDB (free, sem key).
+    """
+    if not api_key:
+        return {"erro": i18n.t("recon.shodan_no_key")}
+    try:
+        socket.inet_aton(ip)
+    except OSError:
+        try:
+            ip = socket.gethostbyname(ip)
+        except socket.gaierror as e:
+            return {"erro": i18n.t("recon.resolve_fail_simple", err=e)}
+    try:
+        response = requests.get(
+            f"https://api.shodan.io/shodan/host/{ip}",
+            params={"key": api_key, "minify": "false"},
+            headers={"User-Agent": "gyntoolkit/2.0"},
+            timeout=timeout,
+        )
+        if response.status_code == 401:
+            return {"erro": i18n.t("recon.shodan_unauthorized")}
+        if response.status_code == 404:
+            return {"ip": ip, "info": i18n.t("recon.shodan_nodata")}
+        response.raise_for_status()
+        return _summarize_shodan(response.json())
+    except (requests.RequestException, ValueError) as e:
+        log.warning("Shodan %s falhou: %s", ip, e)
+        return {"erro": str(e)}
+
+
 def hibp_breaches(domain: str, timeout: int = 10) -> list[dict[str, Any]]:
     """Consulta HIBP breaches por domínio (endpoint público)."""
     try:
