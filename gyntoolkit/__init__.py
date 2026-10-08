@@ -56,6 +56,7 @@ from .scan import (
     syn_scan,
 )
 from .utils import b64_decode, b64_encode, hash_file, hash_text, jwt_decode
+from .web import COMMON_PATHS, web_discovery
 
 __all__ = [
     "__version__",
@@ -70,6 +71,8 @@ __all__ = [
     "ssl_inspect", "http_fingerprint", "internetdb_lookup", "hibp_breaches",
     "mac_vendor", "traceroute", "zone_transfer", "escolher_tipo_dns",
     "DNS_TYPES", "TECH_SIGNATURES",
+    # web discovery
+    "web_discovery", "COMMON_PATHS",
     # brute
     "print_ethical_warning", "load_wordlist", "cupp_generate",
     "ssh_bruteforce", "http_bruteforce",

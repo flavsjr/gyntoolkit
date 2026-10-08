@@ -58,6 +58,15 @@ def _h_recon(args: argparse.Namespace) -> tuple[Any, str, str]:
     if a == "axfr":
         r = recon.zone_transfer(args.target)
         return (r, f"axfr-{args.target}", f"Zone Transfer {args.target}")
+    if a == "webscan":
+        from pathlib import Path as _P
+
+        from .brute import load_wordlist
+        from .web import web_discovery
+
+        custom = load_wordlist(args.wordlist) if args.wordlist and _P(args.wordlist).is_file() else None
+        r = asyncio.run(web_discovery(args.target, paths=custom))
+        return (r, f"webscan-{args.target}", f"Web Discovery {args.target}")
     if a == "geo":
         return (recon.geo_ip(args.target), f"geoip-{args.target}", f"Geo IP {args.target}")
     if a == "revdns":
@@ -189,6 +198,9 @@ def build_parser() -> argparse.ArgumentParser:
     ssl_p.add_argument("--port", type=int, default=443)
     httpfp_p = recon_sub.add_parser("httpfp", parents=[io])
     httpfp_p.add_argument("target", help="URL with http/https.")
+    web_p = recon_sub.add_parser("webscan", parents=[io])
+    web_p.add_argument("target", help="Base URL to enumerate.")
+    web_p.add_argument("--wordlist", default=None, help="Path to a custom paths wordlist.")
     tr_p = recon_sub.add_parser("traceroute", parents=[io])
     tr_p.add_argument("target")
     tr_p.add_argument("--max-hops", dest="max_hops", type=int,
