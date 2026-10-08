@@ -2,20 +2,22 @@
 
 **Requirements:** Python 3.10+ and `pip`.
 
-## From source
+## From PyPI (recommended)
+
+```bash
+pip install gyntoolkit
+gyntoolkit
+```
+
+This installs the `gyntoolkit` command and all runtime dependencies.
+
+## From source (development)
 
 ```bash
 git clone https://github.com/flavsjr/gyntoolkit.git
 cd gyntoolkit
-pip install -r requirements.txt
-python -m gyntoolkit
-```
-
-## Editable install (CLI command)
-
-```bash
 pip install -e .
-gyntoolkit
+gyntoolkit            # or: python -m gyntoolkit
 ```
 
 The entry point `gyntoolkit` is defined in `pyproject.toml`
@@ -27,7 +29,8 @@ The entry point `gyntoolkit` is defined in `pyproject.toml`
 git clone https://github.com/Mebus/cupp.git
 ```
 
-Used by the brute-force "CUPP wordlist" module (wrapper for `cupp.py -i`).
+Used by the brute-force "CUPP wordlist" module (wrapper for `cupp.py -i`). It is
+third-party code cloned on demand — not a Python dependency, not installed by pip.
 
 ## Windows: raw sockets (SYN scan / traceroute)
 
@@ -36,14 +39,18 @@ terminal. Without Npcap the SYN scan degrades to a TCP connect scan automaticall
 
 ## Maintainer: publishing to PyPI
 
-The package metadata is release-ready. To publish:
+Releases are published automatically by the
+[`publish.yml`](../.github/workflows/publish.yml) workflow via PyPI
+**Trusted Publishing** (OIDC) — no token or secret is stored in the repository.
+
+One-time setup (web): register this repository as a trusted publisher for the
+`gyntoolkit` project at <https://pypi.org/manage/account/publishing/>
+(workflow: `publish.yml`, environment: `pypi`).
+
+To cut a release, publish a GitHub Release with the version tag:
 
 ```bash
-pip install build twine
-python -m build            # builds sdist + wheel into dist/
-twine check dist/*
-twine upload dist/*        # requires a PyPI account + token
+gh release create vX.Y.Z --title "vX.Y.Z" --notes "..."
 ```
 
-> `pip install gyntoolkit` works only **after** a maintainer has published the
-> package. Until then, use the source or editable install above.
+The workflow builds the sdist + wheel, runs `twine check`, and uploads to PyPI.

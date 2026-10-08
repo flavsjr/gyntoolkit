@@ -3,9 +3,9 @@
 ## Launch
 
 ```bash
-python -m gyntoolkit     # from source
-# or, after `pip install -e .`
-gyntoolkit
+gyntoolkit               # after `pip install gyntoolkit`
+# or, from a source checkout:
+python -m gyntoolkit
 ```
 
 A dark interactive CLI opens with the `gyntoolkit:~#` prompt and a numbered menu.
