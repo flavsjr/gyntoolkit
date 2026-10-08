@@ -35,7 +35,7 @@ def whois_lookup(domain: str):
 
 def dns_lookup(domain: str,
                record_type: str = "A",
-               nameserver: str = None,
+               nameserver: str | None = None,
                timeout: int = 5) -> list[str]:
     """
     Consulta registros DNS de um domínio.
@@ -439,8 +439,8 @@ def traceroute(target: str, max_hops: int = 20, timeout: int = 3, dport: int = 8
 # em runtime via i18n.t('dns.desc.<tipo>'), não armazenadas aqui.
 DNS_TYPES = ["A", "AAAA", "MX", "NS", "CNAME", "TXT", "SOA"]
 
-def escolher_tipo_dns() -> str:
-    """Mostra menu e retorna o tipo DNS escolhido"""
+def escolher_tipo_dns() -> str | None:
+    """Mostra menu e retorna o tipo DNS escolhido (None se voltar)."""
     print(f"\n{Fore.CYAN}{i18n.t('dns.select')}{Style.RESET_ALL}")
     for idx, tipo in enumerate(DNS_TYPES, 1):
         print(f" {Fore.YELLOW}[{idx}]{Style.RESET_ALL} {tipo} → {i18n.t(f'dns.desc.{tipo}')}")

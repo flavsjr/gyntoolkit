@@ -435,7 +435,7 @@ async def perform_scan(
 
     # Fase 1: Varredura de portas.
     # Privilégio é constante durante o scan: decide SYN vs connect uma vez.
-    use_syn = os.geteuid() == 0 if os.name == 'posix' else is_admin_windows()
+    use_syn = os.geteuid() == 0 if os.name == 'posix' else is_admin_windows()  # type: ignore[attr-defined]
 
     async def _scan_one(port: int) -> tuple[int, bool]:
         async with sem:

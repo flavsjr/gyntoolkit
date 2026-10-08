@@ -11,6 +11,7 @@ from typing import Any
 
 from colorama import Fore, Style
 
+console: Any = None
 try:
     from rich import box
     from rich.console import Console

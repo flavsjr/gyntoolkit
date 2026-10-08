@@ -6,6 +6,12 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Changed
+- Type checking: `mypy gyntoolkit` is now clean and runs as a CI gate. Added
+  `types-requests` / `types-PyYAML` / `types-paramiko` / `types-colorama` dev
+  deps and mypy overrides for scapy/whois; fixed implicit-Optional and a few
+  annotations without behavior changes.
+
 ## [2.3.0] - 2026-10-08
 
 ### Added

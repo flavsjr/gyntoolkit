@@ -588,7 +588,7 @@ def main_entry() -> None:
 
     # Sem subcomando: menu interativo. i18n já foi resolvido em commands.run().
     try:
-        if os.name == 'posix' and os.geteuid() != 0:
+        if os.name == 'posix' and os.geteuid() != 0:  # type: ignore[attr-defined]
             print(f"\n{Fore.RED}{i18n.t('warn.need_root')}{Style.RESET_ALL}")
         elif os.name == 'nt' and not is_admin_windows():
             print(f"\n{Fore.RED}{i18n.t('warn.need_admin')}{Style.RESET_ALL}")
