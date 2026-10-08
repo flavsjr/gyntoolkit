@@ -37,10 +37,10 @@ from .recon import (
 from .scan import network_discovery, perform_scan
 from .utils import b64_decode, b64_encode, hash_file, hash_text, jwt_decode
 
-# Valores canônicos de scan_type (DATA, usados por perform_scan). Mapeiam
-# entradas localizadas (en/pt) para o canônico interno.
-_FAST = "rápido"
-_FULL = "completo"
+# Valores canônicos de scan_type (DATA, usados por perform_scan). Neutros de
+# idioma; entradas localizadas (en/pt) são mapeadas por _normalize_scan_type.
+_FAST = "fast"
+_FULL = "full"
 
 
 def _cyan(key: str, **kw) -> str:
@@ -54,15 +54,16 @@ def _pause() -> None:
 
 def _normalize_scan_type(raw: str, default: str) -> str:
     raw = (raw or "").strip().lower() or default
-    return _FAST if raw in (_FAST, "rapido", "fast", "f", "r") else _FULL
+    # aceita canônico "fast", localizados pt ("rápido"/"rapido") e abreviações
+    return _FAST if raw in (_FAST, "rápido", "rapido", "f", "r") else _FULL
 
 
 def _scan_risk_label(risco: str) -> str:
-    return i18n.t("scan.risk_high") if risco == "Alto" else i18n.t("scan.risk_low")
+    return i18n.t("scan.risk_high") if risco == "high" else i18n.t("scan.risk_low")
 
 
 def _scan_service_label(service: str) -> str:
-    return i18n.t("scan.service_unknown") if service == "Desconhecido" else service
+    return i18n.t("scan.service_unknown") if service == "unknown" else service
 
 
 def _offer_export(data, basename: str, title: str) -> None:
@@ -380,7 +381,7 @@ async def main_flow():
                      ", ".join(data["vulnerabilidades"]) or "—")
                     for port, data in results.items()
                 ]
-                row_styles = ["red" if data["risco"] == "Alto" else "green" for data in results.values()]
+                row_styles = ["red" if data["risco"] == "high" else "green" for data in results.values()]
                 if rows:
                     ui.print_table(i18n.t("label.scan_results", h=host),
                                    i18n.t("table.scan").split("|"),

@@ -21,7 +21,7 @@ from .core import PROJECT_ROOT, log
 # Defaults espelham os valores hardcoded originais da CLI.
 DEFAULTS: dict[str, Any] = {
     "scan": {
-        "default_type": "rápido",   # "rápido" ou "completo"
+        "default_type": "fast",     # "fast" ou "full"
     },
     "brute": {
         "ssh_workers": 8,

@@ -26,7 +26,7 @@ ui:
   lang: "auto"                # UI language: auto | en | pt
 
 scan:
-  default_type: "rápido"      # "rápido" (fast) or "completo" (full)
+  default_type: "fast"        # "fast" (top 21 ports) or "full" (1-65535)
 
 brute:
   ssh_workers: 8
