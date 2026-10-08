@@ -6,6 +6,25 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [2.1.1] - 2026-10-07
+
+### Added
+- Automated PyPI publishing: `.github/workflows/publish.yml` builds and uploads
+  on a GitHub Release using Trusted Publishing (OIDC) — no stored secrets.
+- First release available via `pip install gyntoolkit`.
+
+### Changed
+- HTML export report is now localized (en/pt) and uses the dynamic package
+  version and `<html lang>` instead of hardcoded Portuguese and a stale "v2.0".
+- Internal scan values are language-neutral tokens (`fast`/`full`, `high`/`low`,
+  `unknown`); the UI still localizes them via i18n. Legacy config input is
+  still accepted.
+- Docs lead with `pip install gyntoolkit`; source checkout kept for development.
+
+### Removed
+- Stopped vendoring third-party CUPP; it is cloned on demand. Removed dead
+  Portuguese DNS-type descriptions (display comes from i18n).
+
 ## [2.1.0] - 2026-10-07
 
 ### Fixed
