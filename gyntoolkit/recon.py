@@ -334,20 +334,14 @@ def traceroute(target: str, max_hops: int = 20, timeout: int = 3, dport: int = 8
     return hops
 
 
-DNS_TYPES = [
-    ("A",     "Endereço IPv4"),
-    ("AAAA",  "Endereço IPv6"),
-    ("MX",    "Servidores de e-mail"),
-    ("NS",    "Servidores DNS autoritativos"),
-    ("CNAME", "Apelido de outro domínio"),
-    ("TXT",   "Registros de texto como SPF, DKIM, etc."),
-    ("SOA",   "Informações administrativas do domínio")
-]
+# Tipos DNS oferecidos no menu (ordem fixa). As descrições são localizadas
+# em runtime via i18n.t('dns.desc.<tipo>'), não armazenadas aqui.
+DNS_TYPES = ["A", "AAAA", "MX", "NS", "CNAME", "TXT", "SOA"]
 
 def escolher_tipo_dns() -> str:
     """Mostra menu e retorna o tipo DNS escolhido"""
     print(f"\n{Fore.CYAN}{i18n.t('dns.select')}{Style.RESET_ALL}")
-    for idx, (tipo, _desc) in enumerate(DNS_TYPES, 1):
+    for idx, tipo in enumerate(DNS_TYPES, 1):
         print(f" {Fore.YELLOW}[{idx}]{Style.RESET_ALL} {tipo} → {i18n.t(f'dns.desc.{tipo}')}")
     print(f" {Fore.YELLOW}[0]{Style.RESET_ALL} {i18n.t('dns.back')}")
 
@@ -357,7 +351,7 @@ def escolher_tipo_dns() -> str:
             if choice == 0:
                 return None
             elif 1 <= choice <= len(DNS_TYPES):
-                return DNS_TYPES[choice - 1][0]
+                return DNS_TYPES[choice - 1]
             else:
                 raise ValueError
         except ValueError:
