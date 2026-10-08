@@ -47,6 +47,7 @@ MESSAGES: dict[str, dict[str, str]] = {
         "menu.info.traceroute": "Traceroute (TCP)",
         "menu.info.axfr": "DNS Zone Transfer (AXFR)",
         "menu.info.webscan": "Web Content Discovery",
+        "menu.info.shodan": "Shodan Host (API key)",
         # submenu: brute force
         "menu.brute.title": "Brute Force:",
         "menu.brute.cupp": "Generate Wordlist (CUPP)",
@@ -126,6 +127,7 @@ MESSAGES: dict[str, dict[str, str]] = {
         "status.scanning": "Scanning {h}...",
         "status.axfr": "Attempting zone transfer (AXFR) for {d}...",
         "status.webscan": "Enumerating web content on {u}...",
+        "status.shodan": "Querying Shodan for {t}...",
         # labels / títulos / result
         "label.result": "Result:",
         "label.dns_records": "{t} records of {d}",
@@ -140,6 +142,7 @@ MESSAGES: dict[str, dict[str, str]] = {
         "label.traceroute": "Traceroute {t}:{p}",
         "label.axfr": "Zone transfer of {d}",
         "label.webscan": "Web content on {u} (found: {n})",
+        "label.shodan": "Shodan host {t}",
         "label.creds_found": "Credentials found",
         "label.hosts_found": "Hosts found: {n}",
         "label.scan_results": "Results for {h}",
@@ -209,6 +212,9 @@ MESSAGES: dict[str, dict[str, str]] = {
         "recon.traceroute_priv": "traceroute requires root/admin privilege",
         "recon.scapy_err": "scapy: {err}",
         "recon.axfr_no_ns": "Could not resolve NS records for {d}: {err}",
+        "recon.shodan_no_key": "Shodan API key required. Set api_keys.shodan in config, or use InternetDB (free, no key).",
+        "recon.shodan_unauthorized": "Shodan rejected the API key (401). Check api_keys.shodan.",
+        "recon.shodan_nodata": "No data in Shodan for this host.",
         # dns chooser
         "dns.select": "Select the DNS record type:",
         "dns.back": "Back",
@@ -263,6 +269,7 @@ MESSAGES: dict[str, dict[str, str]] = {
         "menu.info.traceroute": "Traceroute (TCP)",
         "menu.info.axfr": "DNS Zone Transfer (AXFR)",
         "menu.info.webscan": "Web Content Discovery",
+        "menu.info.shodan": "Shodan Host (API key)",
         # submenu: brute force
         "menu.brute.title": "Brute Force:",
         "menu.brute.cupp": "Gerar Wordlist (CUPP)",
@@ -342,6 +349,7 @@ MESSAGES: dict[str, dict[str, str]] = {
         "status.scanning": "Escaneando {h}...",
         "status.axfr": "Tentando zone transfer (AXFR) de {d}...",
         "status.webscan": "Enumerando conteúdo web em {u}...",
+        "status.shodan": "Consultando Shodan para {t}...",
         # labels / títulos / result
         "label.result": "Resultado:",
         "label.dns_records": "Registros {t} de {d}",
@@ -356,6 +364,7 @@ MESSAGES: dict[str, dict[str, str]] = {
         "label.traceroute": "Traceroute {t}:{p}",
         "label.axfr": "Zone transfer de {d}",
         "label.webscan": "Conteúdo web em {u} (encontrados: {n})",
+        "label.shodan": "Host Shodan {t}",
         "label.creds_found": "Credenciais encontradas",
         "label.hosts_found": "Hosts encontrados: {n}",
         "label.scan_results": "Resultados para {h}",
@@ -425,6 +434,9 @@ MESSAGES: dict[str, dict[str, str]] = {
         "recon.traceroute_priv": "traceroute requer privilégio root/admin",
         "recon.scapy_err": "scapy: {err}",
         "recon.axfr_no_ns": "Não foi possível resolver os NS de {d}: {err}",
+        "recon.shodan_no_key": "API key do Shodan necessária. Defina api_keys.shodan no config, ou use o InternetDB (free, sem key).",
+        "recon.shodan_unauthorized": "Shodan rejeitou a API key (401). Verifique api_keys.shodan.",
+        "recon.shodan_nodata": "Sem dados no Shodan para este host.",
         # dns chooser
         "dns.select": "Selecione o tipo de registro DNS:",
         "dns.back": "Voltar",

@@ -83,6 +83,9 @@ def _h_recon(args: argparse.Namespace) -> tuple[Any, str, str]:
                 f"httpfp-{args.target}", f"HTTP Fingerprint {args.target}")
     if a == "internetdb":
         return (recon.internetdb_lookup(args.target), f"internetdb-{args.target}", f"InternetDB {args.target}")
+    if a == "shodan":
+        key = CONFIG.get("api_keys", {}).get("shodan", "")
+        return (recon.shodan_host(args.target, api_key=key), f"shodan-{args.target}", f"Shodan {args.target}")
     if a == "hibp":
         return (recon.hibp_breaches(args.target), f"hibp-{args.target}", f"HIBP {args.target}")
     if a == "mac":
@@ -211,7 +214,7 @@ def build_parser() -> argparse.ArgumentParser:
     # recon
     recon_p = sub.add_parser("recon", help="Reconnaissance modules.")
     recon_sub = recon_p.add_subparsers(dest="action", required=True)
-    for name in ("whois", "geo", "revdns", "subenum", "internetdb", "hibp", "mac", "axfr"):
+    for name in ("whois", "geo", "revdns", "subenum", "internetdb", "hibp", "mac", "axfr", "shodan"):
         sp = recon_sub.add_parser(name, parents=[io])
         sp.add_argument("target")
     dns_p = recon_sub.add_parser("dns", parents=[io])

@@ -34,5 +34,5 @@ export:
 
 api_keys:
   hibp: ""                       # reservado (endpoints atuais são públicos)
-  shodan: ""
+  shodan: ""                     # habilita o módulo "Shodan Host" (recon shodan)
   nvd: ""                        # opcional: eleva o rate-limit do CVE lookup (NVD)
