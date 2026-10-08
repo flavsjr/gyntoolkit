@@ -6,6 +6,11 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Added
+- Pre-commit hooks (`.pre-commit-config.yaml`): `ruff check --fix` and
+  `mypy gyntoolkit` run on each commit using the dev-installed tools (same as CI).
+  Enable with `pre-commit install`; `pre-commit` added to dev deps.
+
 ### Changed
 - CI now also runs on **Windows** (the primary target platform): the unit job
   adds a `windows-latest` / py3.12 leg and the e2e lab suite runs on both
