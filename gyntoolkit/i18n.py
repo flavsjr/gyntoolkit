@@ -189,7 +189,8 @@ MESSAGES: dict[str, dict[str, str]] = {
         "msg.report_saved": "Report saved: {path}",
         "msg.export_fail": "Export failed: {err}",
         # scan (display de valores-DATA + prints)
-        "scan.risk_high": "High", "scan.risk_low": "Low",
+        "scan.risk_critical": "Critical", "scan.risk_high": "High",
+        "scan.risk_medium": "Medium", "scan.risk_low": "Low",
         "scan.service_unknown": "Unknown",
         "scan.banner_none": "No banner identified",
         "scan.cidr_invalid": "Invalid CIDR: {err}",
@@ -411,7 +412,8 @@ MESSAGES: dict[str, dict[str, str]] = {
         "msg.report_saved": "Relatório salvo: {path}",
         "msg.export_fail": "Falha ao exportar: {err}",
         # scan (display de valores-DATA + prints)
-        "scan.risk_high": "Alto", "scan.risk_low": "Baixo",
+        "scan.risk_critical": "Crítico", "scan.risk_high": "Alto",
+        "scan.risk_medium": "Médio", "scan.risk_low": "Baixo",
         "scan.service_unknown": "Desconhecido",
         "scan.banner_none": "Nenhum banner identificado",
         "scan.cidr_invalid": "CIDR inválido: {err}",

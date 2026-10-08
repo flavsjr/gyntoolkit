@@ -107,7 +107,10 @@ def _h_scan(args: argparse.Namespace) -> tuple[Any, str, str]:
                 f"Host discovery {args.target}")
     concurrency = args.concurrency or CONFIG["scan"].get("concurrency", 100)
     nvd_key = CONFIG.get("api_keys", {}).get("nvd", "")
-    results = asyncio.run(perform_scan(args.target, args.type, concurrency=concurrency, nvd_api_key=nvd_key))
+    results = asyncio.run(perform_scan(
+        args.target, args.type, concurrency=concurrency, nvd_api_key=nvd_key,
+        min_cvss=args.min_cvss, kev_only=args.kev_only,
+    ))
     # chaves int → str p/ JSON estável
     report = {str(port): data for port, data in results.items()}
     return ({args.target: report}, f"scan-{args.target}", f"Scan {args.target}")
@@ -241,6 +244,10 @@ def build_parser() -> argparse.ArgumentParser:
     scan_p.add_argument("target", help="IP/host, or CIDR (e.g. 192.168.0.0/24) for discovery.")
     scan_p.add_argument("--type", choices=("fast", "full"), default=CONFIG["scan"]["default_type"])
     scan_p.add_argument("--concurrency", type=int, default=0, help="Simultaneous probes (0 = config default).")
+    scan_p.add_argument("--min-cvss", dest="min_cvss", type=float, default=0.0,
+                        help="Only show CVEs with CVSS base score >= this value.")
+    scan_p.add_argument("--kev-only", dest="kev_only", action="store_true",
+                        help="Only show CVEs in the CISA KEV catalog.")
 
     # utils
     utils_p = sub.add_parser("utils", help="Crypto helpers.")

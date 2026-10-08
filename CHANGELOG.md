@@ -6,6 +6,12 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Added
+- CVE enrichment: scan results now carry CVSS base score/severity (from the NVD
+  response), EPSS exploitation probability (first.org) and a CISA KEV flag
+  (cached locally). Host risk is the highest severity found; KEV forces critical.
+  New scan filters `--min-cvss` and `--kev-only`.
+
 ## [2.2.0] - 2026-10-08
 
 ### Added

@@ -63,11 +63,24 @@ def _normalize_scan_type(raw: str, default: str) -> str:
 
 
 def _scan_risk_label(risco: str) -> str:
-    return i18n.t("scan.risk_high") if risco == "high" else i18n.t("scan.risk_low")
+    return i18n.t(f"scan.risk_{risco}") if risco in ("critical", "high", "medium", "low") else risco
 
 
 def _scan_service_label(service: str) -> str:
     return i18n.t("scan.service_unknown") if service == "unknown" else service
+
+
+def _fmt_cve(v: dict) -> str:
+    """Formata um CVE enriquecido p/ célula de tabela: ID (CVSS, EPSS%, KEV)."""
+    parts = []
+    if v.get("cvss") is not None:
+        parts.append(f"CVSS {v['cvss']}")
+    if v.get("epss") is not None:
+        parts.append(f"EPSS {round(v['epss'] * 100, 1)}%")
+    if v.get("kev"):
+        parts.append("KEV")
+    suffix = f" ({', '.join(parts)})" if parts else ""
+    return f"{v['id']}{suffix}"
 
 
 def _offer_export(data, basename: str, title: str) -> None:
@@ -456,10 +469,13 @@ async def main_flow():
                 rows = [
                     (port, _scan_service_label(data["service"]), _scan_risk_label(data["risco"]),
                      (data["banner"] or "")[:60],
-                     ", ".join(data["vulnerabilidades"]) or "—")
+                     ", ".join(_fmt_cve(v) for v in data["vulnerabilidades"]) or "—")
                     for port, data in results.items()
                 ]
-                row_styles = ["red" if data["risco"] == "high" else "green" for data in results.values()]
+                row_styles = [
+                    "red" if data["risco"] in ("critical", "high") else "green"
+                    for data in results.values()
+                ]
                 if rows:
                     ui.print_table(i18n.t("label.scan_results", h=host),
                                    i18n.t("table.scan").split("|"),

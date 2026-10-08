@@ -105,6 +105,9 @@
 - **CVE analysis** per service via **NVD API v2.0** — parses product + version
   from the banner and matches by **CPE** (`virtualMatchString`), falling back to
   keyword search; rate-limited and deduplicated per banner
+- **Risk scoring** — each CVE is enriched with **CVSS** base score/severity,
+  **EPSS** exploitation probability and a **CISA KEV** flag; host risk is the
+  highest severity found (KEV forces critical). Filter with `--min-cvss` / `--kev-only`
 - **Host discovery** (ARP scan) by CIDR — e.g. `192.168.0.0/24`
 - Automatic risk classification based on CVEs found
 
@@ -178,7 +181,8 @@ gyntoolkit recon axfr example.com                 # zone transfer attempt
 gyntoolkit recon webscan http://example.com       # web content discovery
 gyntoolkit recon shodan 1.1.1.1                   # Shodan host (needs api_keys.shodan)
 gyntoolkit recon ssl example.com --port 443       # TLS cert
-gyntoolkit scan 127.0.0.1 --type fast             # port scan + CVEs
+gyntoolkit scan 127.0.0.1 --type fast             # port scan + CVEs (CVSS/EPSS/KEV)
+gyntoolkit scan 10.0.0.5 --min-cvss 7.0 --kev-only # only high-risk / actively exploited
 gyntoolkit scan 192.168.0.0/24                    # host discovery (CIDR)
 gyntoolkit utils hash "text" --algo sha1
 gyntoolkit utils jwt <token>
