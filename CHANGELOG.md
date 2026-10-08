@@ -6,6 +6,37 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-10-08
+
+### Added
+- Non-interactive, scriptable CLI: `gyntoolkit <recon|scan|utils|brute|wordlist> ...`
+  prints JSON to stdout and can save a report via `-o/--output` + `-f/--format`.
+  No subcommand still opens the interactive menu. Active attacks require
+  `--authorize`.
+- Recon: DNS zone transfer (AXFR) against each authoritative NS; web content
+  discovery (`robots.txt`/sitemap/security.txt + built-in path wordlist); full
+  Shodan host lookup via `api_keys.shodan` (falls back to the key-free InternetDB
+  hint). AXFR and the new modules are reachable from both the menu and the CLI.
+- Brute: native CUPP-style wordlist generator (offline) — case/leet variants,
+  years, common suffixes and term combinations.
+- Export: CSV and Markdown report formats (alongside JSON and HTML).
+- Config: `scan.concurrency` and `api_keys.nvd`.
+
+### Changed
+- Scan port probing is bounded by `scan.concurrency` (a full scan no longer
+  spawns 65k tasks at once).
+- CVE lookup is version-aware: parses product + version from the banner and
+  matches by CPE (`virtualMatchString`), with keyword fallback; NVD calls are
+  rate-limited and deduplicated per banner.
+- Banner grabbing reads a service greeting first and sends a valid `Host` header.
+
+### Fixed
+- HTTP Basic brute force now treats only `2xx` as success (was any status except
+  401/403, so 404/5xx were false positives).
+- Authorization confirmation word is localized (`AUTHORIZE`/`AUTORIZO`) instead
+  of a hardcoded Portuguese token.
+- `http_fingerprint` no longer prints `InsecureRequestWarning` to the UI.
+
 ## [2.1.1] - 2026-10-07
 
 ### Added
@@ -63,6 +94,8 @@ All notable changes to this project are documented here. The format is based on
 - `.gyntoolkit.yaml` configuration with deep-merge over defaults.
 - Local security lab (mock SSH/HTTP servers) with an end-to-end runner.
 
-[Unreleased]: https://github.com/flavsjr/gyntoolkit/compare/v2.1.0...HEAD
+[Unreleased]: https://github.com/flavsjr/gyntoolkit/compare/v2.2.0...HEAD
+[2.2.0]: https://github.com/flavsjr/gyntoolkit/compare/v2.1.1...v2.2.0
+[2.1.1]: https://github.com/flavsjr/gyntoolkit/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/flavsjr/gyntoolkit/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/flavsjr/gyntoolkit/releases/tag/v2.0.0
