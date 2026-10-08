@@ -22,6 +22,9 @@ gyntoolkit.log
 reports/
 .gyntoolkit.yaml
 
+# Dependência externa clonada sob demanda (brute force / CUPP)
+cupp/
+
 # IDE
 .vscode/
 .idea/
