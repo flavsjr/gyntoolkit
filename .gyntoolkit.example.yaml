@@ -4,7 +4,7 @@
 # Também dá para apontar um caminho via env: GYNTOOLKIT_CONFIG=/path/config.yaml
 
 scan:
-  default_type: "rápido"        # "rápido" (top 21 portas) ou "completo" (1-65535)
+  default_type: "fast"          # "fast" (top 21 portas) ou "full" (1-65535)
 
 brute:
   ssh_workers: 8

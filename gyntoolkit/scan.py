@@ -107,7 +107,8 @@ def network_discovery(cidr: str, timeout: int = 2) -> list[str]:
 
 async def perform_scan(target: str, scan_type: str) -> dict[int, dict]:
     """Executa varredura completa com análise de vulnerabilidades"""
-    ports = TOP_PORTS if scan_type == "rápido" else range(1, 65536)
+    # aceita canônico "fast" e legados pt ("rápido"/"rapido"); resto = full range
+    ports = TOP_PORTS if scan_type in ("fast", "rápido", "rapido") else range(1, 65536)
     open_ports = []
     results = {}
 
@@ -134,14 +135,16 @@ async def perform_scan(target: str, scan_type: str) -> dict[int, dict]:
 
     # Fase 3: Analisar vulnerabilidades
     for port in open_ports:
-        service = banners[port].split()[0] if banners[port] else "Desconhecido"
+        service = banners[port].split()[0] if banners[port] else "unknown"
         vulns = check_vulnerabilities(service)
 
+        # 'service' e 'risco' são tokens neutros (DATA); o display os localiza
+        # via i18n (scan.service_unknown / scan.risk_high / scan.risk_low).
         results[port] = {
             'service': service,
             'banner': banners[port],
             'vulnerabilidades': vulns,
-            'risco': "Alto" if vulns else "Baixo"
+            'risco': "high" if vulns else "low"
         }
 
     return results
