@@ -7,6 +7,9 @@ All notable changes to this project are documented here. The format is based on
 ## [Unreleased]
 
 ### Changed
+- CI now also runs on **Windows** (the primary target platform): the unit job
+  adds a `windows-latest` / py3.12 leg and the e2e lab suite runs on both
+  `ubuntu-latest` and `windows-latest`.
 - Type checking: `mypy gyntoolkit` is now clean and runs as a CI gate. Added
   `types-requests` / `types-PyYAML` / `types-paramiko` / `types-colorama` dev
   deps and mypy overrides for scapy/whois; fixed implicit-Optional and a few
