@@ -21,7 +21,9 @@ def print_ethical_warning(action: str) -> bool:
     print(f"{Fore.RED}{i18n.t('brute.warn_crime')}{Style.RESET_ALL}")
     print(f"{Fore.RED}{'=' * 60}{Style.RESET_ALL}")
     confirm = input(f"{Fore.YELLOW}{i18n.t('brute.confirm')}{Style.RESET_ALL}").strip()
-    return confirm == "AUTORIZO"
+    # Aceita a palavra localizada (en/pt) e o legado "AUTORIZO" como alias.
+    accepted = {i18n.t("brute.confirm_word").strip().upper(), "AUTORIZO"}
+    return confirm.upper() in accepted
 
 
 def load_wordlist(path: str) -> list[str]:
@@ -158,7 +160,9 @@ async def http_bruteforce(
                     if mode == "basic":
                         auth = aiohttp.BasicAuth(u, p)
                         async with session.get(url, auth=auth) as r:
-                            ok = r.status not in (401, 403)
+                            # Basic Auth: sucesso = 2xx. 401/403 = falha; 404/5xx
+                            # NÃO são credencial válida (evita falso-positivo).
+                            ok = 200 <= r.status < 300
                     else:
                         payload = {user_field: u, pass_field: p}
                         async with session.post(url, data=payload, allow_redirects=False) as r:

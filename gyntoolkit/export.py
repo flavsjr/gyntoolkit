@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Exportação de resultados: JSON e relatório HTML (tema dark)."""
 
+import csv
 import html
+import io
 import json
 import re
 from datetime import datetime
@@ -34,6 +36,89 @@ def export_json(data: Any, path: str) -> str:
     p.parent.mkdir(parents=True, exist_ok=True)
     with p.open("w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+    return str(p)
+
+
+def _flatten_scalar(value: Any) -> str:
+    """Converte um valor em célula de texto plano (listas viram 'a; b; c')."""
+    if isinstance(value, (list, tuple)):
+        return "; ".join(_flatten_scalar(v) for v in value)
+    if isinstance(value, dict):
+        return "; ".join(f"{k}={_flatten_scalar(v)}" for k, v in value.items())
+    if value is None:
+        return ""
+    return str(value)
+
+
+def export_csv(data: Any, path: str) -> str:
+    """Serializa ``data`` como CSV. Retorna o path escrito.
+
+    - lista de dicts → uma linha por item, colunas = união das chaves;
+    - dict plano → duas colunas (campo, valor);
+    - outros → coluna única ``value``.
+    """
+    p = Path(path).expanduser()
+    p.parent.mkdir(parents=True, exist_ok=True)
+    buf = io.StringIO()
+
+    if isinstance(data, list) and data and all(isinstance(r, dict) for r in data):
+        fields: list[str] = []
+        for row in data:
+            for k in row:
+                if k not in fields:
+                    fields.append(k)
+        dict_writer = csv.DictWriter(buf, fieldnames=fields, extrasaction="ignore")
+        dict_writer.writeheader()
+        for row in data:
+            dict_writer.writerow({k: _flatten_scalar(row.get(k)) for k in fields})
+    else:
+        writer = csv.writer(buf)
+        if isinstance(data, dict):
+            writer.writerow(["field", "value"])
+            for k, v in data.items():
+                writer.writerow([k, _flatten_scalar(v)])
+        else:
+            writer.writerow(["value"])
+            for item in (data if isinstance(data, (list, tuple)) else [data]):
+                writer.writerow([_flatten_scalar(item)])
+
+    with p.open("w", encoding="utf-8", newline="") as f:
+        f.write(buf.getvalue())
+    return str(p)
+
+
+def _render_md_value(value: Any, depth: int = 0) -> str:
+    """Renderiza recursivamente um valor como Markdown."""
+    pad = "  " * depth
+    if isinstance(value, dict):
+        if not value:
+            return "_{}_"
+        lines = [f"\n{pad}- **{k}**: {_render_md_value(v, depth + 1)}" for k, v in value.items()]
+        return "".join(lines)
+    if isinstance(value, (list, tuple)):
+        if not value:
+            return "_[]_"
+        return "".join(f"\n{pad}- {_render_md_value(v, depth + 1)}" for v in value)
+    if value is None:
+        return "—"
+    return str(value).replace("\n", " ")
+
+
+def export_md(data: Any, title: str, path: str) -> str:
+    """Renderiza ``data`` em relatório Markdown. Retorna o path escrito."""
+    from . import __version__
+
+    p = Path(path).expanduser()
+    p.parent.mkdir(parents=True, exist_ok=True)
+    generated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    doc = (
+        f"# {title}\n\n"
+        f"> {i18n.t('report.generated_by', version=f'v{__version__}')} · {generated}\n\n"
+        f"{_render_md_value(data).lstrip()}\n\n"
+        f"---\n_{i18n.t('report.footer')}_\n"
+    )
+    with p.open("w", encoding="utf-8") as f:
+        f.write(doc)
     return str(p)
 
 
@@ -122,7 +207,7 @@ def save_report(
 ) -> str:
     """Grava ``data`` em ``out_dir/<basename>-<timestamp>.<fmt>``.
 
-    ``fmt`` aceita ``json`` ou ``html``. Retorna o path escrito.
+    ``fmt`` aceita ``json``, ``html``, ``csv`` ou ``md``. Retorna o path escrito.
     """
     fmt = (fmt or "json").lower().strip()
     d = _ensure_dir(out_dir)
@@ -131,6 +216,10 @@ def save_report(
 
     if fmt == "html":
         return export_html(data, title or basename, path)
+    if fmt == "csv":
+        return export_csv(data, path)
+    if fmt == "md":
+        return export_md(data, title or basename, path)
     if fmt == "json":
         return export_json(data, path)
 

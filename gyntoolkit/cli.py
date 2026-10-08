@@ -371,9 +371,13 @@ async def main_flow():
                 targets = [target]
 
             report = {}
+            scan_concurrency = CONFIG["scan"].get("concurrency", 100)
+            nvd_key = CONFIG.get("api_keys", {}).get("nvd", "")
             for host in targets:
                 with ui.status(i18n.t("status.scanning", h=host)):
-                    results = await perform_scan(host, scan_type)
+                    results = await perform_scan(
+                        host, scan_type, concurrency=scan_concurrency, nvd_api_key=nvd_key
+                    )
                 report[host] = results
                 rows = [
                     (port, _scan_service_label(data["service"]), _scan_risk_label(data["risco"]),
@@ -437,8 +441,18 @@ async def main_flow():
 
 
 def main_entry() -> None:
-    """Entry point CLI (usado por pyproject scripts)."""
-    i18n.set_lang(i18n.resolve_lang(CONFIG.get("ui", {}).get("lang")))
+    """Entry point CLI (usado por pyproject scripts).
+
+    Com subcomando (``gyntoolkit recon dns ...``) roda a CLI não-interativa e
+    sai. Sem subcomando, abre o menu interativo clássico.
+    """
+    from . import commands
+
+    rc = commands.run()
+    if rc != -1:  # subcomando executado (ou erro) → não abre o menu
+        sys.exit(rc)
+
+    # Sem subcomando: menu interativo. i18n já foi resolvido em commands.run().
     try:
         if os.name == 'posix' and os.geteuid() != 0:
             print(f"\n{Fore.RED}{i18n.t('warn.need_root')}{Style.RESET_ALL}")

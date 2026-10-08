@@ -22,6 +22,7 @@ from .core import PROJECT_ROOT, log
 DEFAULTS: dict[str, Any] = {
     "scan": {
         "default_type": "fast",     # "fast" ou "full"
+        "concurrency": 100,         # sondas simultâneas (limita o full scan)
     },
     "brute": {
         "ssh_workers": 8,
@@ -50,6 +51,7 @@ DEFAULTS: dict[str, Any] = {
     "api_keys": {
         "hibp": "",                 # reservado (endpoints atuais são públicos)
         "shodan": "",
+        "nvd": "",                  # opcional: eleva o rate-limit do NVD CVE lookup
     },
 }
 

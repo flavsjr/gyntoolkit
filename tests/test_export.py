@@ -39,3 +39,38 @@ def test_save_report_html(tmp_path):
     path = export.save_report({"a": 1}, "x", fmt="html", out_dir=str(tmp_path), title="T")
     assert path.endswith(".html")
     assert "<h1>" in Path(path).read_text(encoding="utf-8")
+
+
+def test_export_csv_list_of_dicts(tmp_path):
+    data = [
+        {"name": "A", "date": "2020", "classes": ["Email", "Password"]},
+        {"name": "B", "date": "2021"},
+    ]
+    path = export.export_csv(data, str(tmp_path / "r.csv"))
+    rows = Path(path).read_text(encoding="utf-8").splitlines()
+    assert rows[0] == "name,date,classes"
+    # lista vira célula "a; b"; coluna ausente fica vazia
+    assert "A,2020,Email; Password" in rows[1]
+    assert rows[2].startswith("B,2021,")
+
+
+def test_export_csv_flat_dict(tmp_path):
+    path = export.export_csv({"ip": "1.1.1.1", "ports": [80, 443]}, str(tmp_path / "r.csv"))
+    text = Path(path).read_text(encoding="utf-8")
+    assert "field,value" in text
+    assert "ports,80; 443" in text
+
+
+def test_save_report_md(tmp_path):
+    path = export.save_report({"host": "x", "open": [22]}, "scan", fmt="md",
+                              out_dir=str(tmp_path), title="Scan X")
+    assert path.endswith(".md")
+    doc = Path(path).read_text(encoding="utf-8")
+    assert doc.startswith("# Scan X")
+    assert "**host**" in doc
+
+
+def test_save_report_csv(tmp_path):
+    path = export.save_report({"a": 1}, "x", fmt="csv", out_dir=str(tmp_path))
+    assert path.endswith(".csv")
+    assert "field,value" in Path(path).read_text(encoding="utf-8")
