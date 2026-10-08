@@ -10,6 +10,7 @@ from pathlib import Path
 from colorama import Fore, Style
 
 from . import i18n, ui
+from .audit import run_audit
 from .brute import (
     cupp_generate,
     http_bruteforce,
@@ -130,6 +131,7 @@ async def main_flow():
             i18n.t("menu.main.brute"),
             i18n.t("menu.main.scan"),
             i18n.t("menu.main.utils"),
+            i18n.t("menu.main.audit"),
         ])
 
         if choice == 0:
@@ -558,6 +560,16 @@ async def main_flow():
                     print(f"\n {Fore.YELLOW}header:{Style.RESET_ALL} {json.dumps(r['header'], indent=2)}")
                     print(f" {Fore.YELLOW}payload:{Style.RESET_ALL} {json.dumps(r['payload'], indent=2)}")
                     print(f" {Fore.YELLOW}signature:{Style.RESET_ALL} {r['signature']}")
+
+        elif choice == 5:  # Audit (perfil consolidado — passivo no menu)
+            target = sanitize_input(input(_cyan("prompt.target")))
+            ui.notice(i18n.t("msg.audit_passive_note"))
+            with ui.status(i18n.t("status.audit", t=target)):
+                report = await run_audit(target)  # menu = passivo; scan ativo via CLI
+            ran = ", ".join(report["stages"].keys())
+            ui.print_kv(i18n.t("label.audit", t=target),
+                        {**report["summary"], i18n.t("audit.stages_run"): ran})
+            _offer_export(report, f"audit-{target}", f"Audit {target}")
 
         _pause()
 
