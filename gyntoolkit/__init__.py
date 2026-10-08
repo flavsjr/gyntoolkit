@@ -52,6 +52,7 @@ from .scan import (
     connect_scan,
     get_banner,
     network_discovery,
+    parse_service,
     perform_scan,
     syn_scan,
 )
@@ -65,7 +66,7 @@ __all__ = [
     "clear_screen", "is_admin_windows", "sanitize_input", "show_menu",
     # scan
     "syn_scan", "connect_scan", "get_banner", "check_vulnerabilities",
-    "network_discovery", "perform_scan",
+    "parse_service", "network_discovery", "perform_scan",
     # recon
     "whois_lookup", "dns_lookup", "geo_ip", "reverse_dns", "subdomain_enum",
     "ssl_inspect", "http_fingerprint", "internetdb_lookup", "hibp_breaches",
