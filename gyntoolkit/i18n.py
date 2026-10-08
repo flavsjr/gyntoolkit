@@ -16,6 +16,7 @@ Uso::
     print(i18n.t("scan.hosts_found", n=3))
 """
 
+import contextlib
 import locale
 import os
 
@@ -507,11 +508,14 @@ def _normalize(value: str | None) -> str | None:
 
 
 def _from_locale() -> str | None:
-    for getter in (lambda: locale.getlocale()[0], locale.getdefaultlocale):
-        try:
-            code = _normalize(getter()[0] if getter is locale.getdefaultlocale else getter())
-        except (ValueError, IndexError, TypeError):
-            code = None
+    with contextlib.suppress(ValueError, TypeError):
+        code = _normalize(locale.getlocale()[0])
+        if code:
+            return code
+    # getdefaultlocale é deprecado (3.11+); só usado se getlocale não resolveu.
+    with contextlib.suppress(ValueError, TypeError):
+        default = locale.getdefaultlocale()
+        code = _normalize(default[0] if default else None)
         if code:
             return code
     for env_var in ("LC_ALL", "LC_MESSAGES", "LANG"):
