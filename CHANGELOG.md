@@ -14,6 +14,10 @@ All notable changes to this project are documented here. The format is based on
 - Email security recon (`recon mailsec`): analyzes SPF, DKIM, DMARC, DNSSEC and
   CAA for a domain with a per-item verdict (ok/weak/missing), via the interactive
   menu and the non-interactive CLI.
+- `audit`: orchestrates recon (and, with `--active --authorize`, the port scan)
+  over one target into a single consolidated report with an executive summary.
+  Passive by default; stage selection via `--only` / `--skip`. Available as a
+  new main-menu entry (passive) and the `gyntoolkit audit <target>` CLI.
 
 ### Changed
 - `README.pt-BR.md` brought to full parity with `README.md` (v2.2 features:

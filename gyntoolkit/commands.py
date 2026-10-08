@@ -199,7 +199,24 @@ def _run_wordlist(args: argparse.Namespace) -> int:
     return 0
 
 
-_DISPATCH = {"recon": _h_recon, "scan": _h_scan, "utils": _h_utils, "brute": _h_brute}
+def _h_audit(args: argparse.Namespace) -> tuple[Any, str, str]:
+    from .audit import run_audit
+
+    only = [s for s in (args.only or "").split(",") if s.strip()] or None
+    skip = [s for s in (args.skip or "").split(",") if s.strip()] or None
+    concurrency = CONFIG["scan"].get("concurrency", 100)
+    nvd_key = CONFIG.get("api_keys", {}).get("nvd", "")
+    report = asyncio.run(run_audit(
+        args.target, active=args.active, authorized=args.authorize,
+        only=only, skip=skip, concurrency=concurrency, nvd_key=nvd_key, scan_type=args.type,
+    ))
+    if report.get("active_requested_without_auth"):
+        print("[!] --active ignored without --authorize (scan skipped).", file=sys.stderr)
+    return (report, f"audit-{args.target}", f"Audit {args.target}")
+
+
+_DISPATCH = {"recon": _h_recon, "scan": _h_scan, "utils": _h_utils,
+             "brute": _h_brute, "audit": _h_audit}
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -289,6 +306,19 @@ def build_parser() -> argparse.ArgumentParser:
     http_p.add_argument("--fail-signature", dest="fail_signature", default="")
     http_p.add_argument("--workers", type=int, default=0)
     http_p.add_argument("--authorize", action="store_true", help="Confirm you have written authorization.")
+
+    # audit (orquestrador: 1 alvo → perfil consolidado)
+    audit_p = sub.add_parser("audit", parents=[io],
+                             help="Full target profile: passive recon (+ active scan with --active).")
+    audit_p.add_argument("target", help="Domain or IP to profile.")
+    audit_p.add_argument("--active", action="store_true",
+                         help="Include the active port scan (requires --authorize).")
+    audit_p.add_argument("--authorize", action="store_true",
+                         help="Confirm written authorization for the active scan.")
+    audit_p.add_argument("--type", choices=("fast", "full"), default="fast",
+                         help="Scan type for the active stage.")
+    audit_p.add_argument("--only", default="", help="Comma-separated stages to run exclusively.")
+    audit_p.add_argument("--skip", default="", help="Comma-separated stages to skip.")
 
     # wordlist (gerador nativo; saída em linhas, não JSON)
     wl_p = sub.add_parser("wordlist", help="Generate a custom wordlist (CUPP-style, offline).")

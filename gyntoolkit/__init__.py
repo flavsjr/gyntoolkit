@@ -8,6 +8,7 @@ Este ``__init__`` re-exporta a API pública para manter compatibilidade com
 __version__ = "2.2.0"
 
 from . import i18n, ui
+from .audit import run_audit
 from .brute import (
     cupp_generate,
     http_bruteforce,
@@ -79,6 +80,8 @@ __all__ = [
     "web_discovery", "COMMON_PATHS",
     # mail security
     "mailsec_report", "DEFAULT_DKIM_SELECTORS",
+    # audit
+    "run_audit",
     # wordlist
     "generate_wordlist",
     # brute

@@ -122,6 +122,12 @@
 | 4 | **Base64 decode** | base64 → UTF-8 with auto-padding |
 | 5 | **JWT decode** | Header + payload without signature verification |
 
+### `[5]` Audit — one target, consolidated profile
+
+Orchestrates the recon modules (and, with `--active --authorize`, the port scan)
+into a **single report** with an executive summary. Passive by default; stage
+selection via `--only` / `--skip`. See the [CLI examples](#non-interactive-cli-scriptable).
+
 ---
 
 ## Installation
@@ -185,10 +191,18 @@ gyntoolkit recon ssl example.com --port 443       # TLS cert
 gyntoolkit scan 127.0.0.1 --type fast             # port scan + CVEs (CVSS/EPSS/KEV)
 gyntoolkit scan 10.0.0.5 --min-cvss 7.0 --kev-only # only high-risk / actively exploited
 gyntoolkit scan 192.168.0.0/24                    # host discovery (CIDR)
+gyntoolkit audit example.com                      # full passive profile → one report
+gyntoolkit audit 10.0.0.5 --active --authorize    # + active port scan (authorized)
 gyntoolkit utils hash "text" --algo sha1
 gyntoolkit utils jwt <token>
 gyntoolkit wordlist --terms alice,fluffy,acme --years 1990,2020 --leet --save wl.txt
 ```
+
+`audit` runs a pipeline over one target and consolidates everything into a single
+report with an executive summary. It is **passive by default** (WHOIS, DNS, geo,
+subdomains, TLS, HTTP fingerprint, InternetDB, HIBP, email security); the active
+port scan only runs with `--active --authorize`. Narrow it with `--only a,b` or
+`--skip a,b`.
 
 Global flags (place after the subcommand): `-o/--output DIR` saves a report,
 `-f/--format {json,html,csv,md}` picks its format, `-q/--quiet` silences stdout,
