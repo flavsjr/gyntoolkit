@@ -312,9 +312,12 @@ locale and falls back to English.
 |-----|---------|
 | [`docs/installation.md`](docs/installation.md) | Install from PyPI or source, and the PyPI publish flow |
 | [`docs/quickstart.md`](docs/quickstart.md) | First run, menu walkthrough |
-| [`docs/reconnaissance.md`](docs/reconnaissance.md) | Recon modules (WHOIS, DNS, TLS, fingerprint, …) |
-| [`docs/scanning.md`](docs/scanning.md) | Port scan, banners, CVE lookup, host discovery |
-| [`docs/reports.md`](docs/reports.md) | JSON / HTML report formats |
+| [`docs/cli.md`](docs/cli.md) | Non-interactive (scriptable) CLI reference |
+| [`docs/reconnaissance.md`](docs/reconnaissance.md) | Recon modules (WHOIS, DNS, TLS, AXFR, webscan, Shodan, email security, …) |
+| [`docs/scanning.md`](docs/scanning.md) | Port scan, banners, CVE enrichment (CVSS/EPSS/KEV), host discovery |
+| [`docs/brute.md`](docs/brute.md) | Brute force (SSH/HTTP) + native wordlist generator |
+| [`docs/audit.md`](docs/audit.md) | One-target consolidated profile orchestrator |
+| [`docs/reports.md`](docs/reports.md) | JSON / HTML / CSV / Markdown report formats |
 | [`docs/configuration.md`](docs/configuration.md) | `.gyntoolkit.yaml` reference |
 | [`docs/security-lab.md`](docs/security-lab.md) | Local lab + end-to-end tests |
 | [`docs/development.md`](docs/development.md) | Dev setup, lint, tests |

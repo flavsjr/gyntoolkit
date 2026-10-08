@@ -27,6 +27,7 @@ ui:
 
 scan:
   default_type: "fast"        # "fast" (top 21 ports) or "full" (1-65535)
+  concurrency: 100            # simultaneous probes (bounds the full scan)
 
 brute:
   ssh_workers: 8
@@ -47,11 +48,12 @@ recon:
 export:
   dir: reports
   auto: false
-  format: json                # json | html
+  format: json                # json | html | csv | md
 
 api_keys:
   hibp: ""                    # reserved — current endpoints are public/free
-  shodan: ""
+  shodan: ""                  # enables the "Shodan Host" recon module
+  nvd: ""                     # optional — raises the NVD CVE-lookup rate limit
 ```
 
 ## UI language (i18n)
