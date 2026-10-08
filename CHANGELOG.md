@@ -8,7 +8,10 @@ All notable changes to this project are documented here. The format is based on
 
 ### Added
 - Coverage gate in CI: `pytest-cov` measures the core logic (display layers
-  `cli.py`/`ui.py` excluded) and the unit job fails under 60% (currently ~62%).
+  `cli.py`/`ui.py` excluded) and the unit job fails under 65% (currently ~69%).
+- More offline tests for `recon` (dns_lookup, reverse_dns, mac_vendor, ssl_inspect
+  error path, whois, zone_transfer) and `brute` (load_wordlist, ssh/http brute via
+  mocks + an ephemeral aiohttp server) — lifting those modules to ~54% / ~70%.
 - Offline tests for the network paths: `_nvd_get` CVSS parsing, `shodan_host`
   (200/401/404), and `geo_ip` / `internetdb_lookup` / `hibp_breaches` /
   `http_fingerprint` / `subdomain_enum` — all with mocked HTTP, no real requests.

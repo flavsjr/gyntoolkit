@@ -35,7 +35,7 @@ jobs:
           pip install -e ".[dev]"
 
       - name: Run unit tests (with coverage gate)
-        run: pytest -q --cov=gyntoolkit --cov-report=term-missing --cov-fail-under=60
+        run: pytest -q --cov=gyntoolkit --cov-report=term-missing --cov-fail-under=65
 
   e2e:
     name: e2e lab (${{ matrix.os }})
