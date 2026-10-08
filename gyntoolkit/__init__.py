@@ -5,7 +5,7 @@ Este ``__init__`` re-exporta a API pública para manter compatibilidade com
 ``import gyntoolkit as g`` (usado pelo lab E2E) e pelo entry point do pyproject.
 """
 
-__version__ = "2.1.1"
+__version__ = "2.2.0"
 
 from . import i18n, ui
 from .brute import (
