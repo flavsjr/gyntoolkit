@@ -58,6 +58,7 @@ from .scan import (
 )
 from .utils import b64_decode, b64_encode, hash_file, hash_text, jwt_decode
 from .web import COMMON_PATHS, web_discovery
+from .wordlist import generate_wordlist
 
 __all__ = [
     "__version__",
@@ -74,6 +75,8 @@ __all__ = [
     "DNS_TYPES", "TECH_SIGNATURES",
     # web discovery
     "web_discovery", "COMMON_PATHS",
+    # wordlist
+    "generate_wordlist",
     # brute
     "print_ethical_warning", "load_wordlist", "cupp_generate",
     "ssh_bruteforce", "http_bruteforce",
