@@ -64,7 +64,8 @@ MESSAGES: dict[str, dict[str, str]] = {
         "brute.warn_active": "[!] WARNING: {action} is an active attack.",
         "brute.warn_authorized": "[!] Use only on targets with written authorization.",
         "brute.warn_crime": "[!] Unauthorized use is a crime (Lei 12.737/12, CFAA, etc).",
-        "brute.confirm": "Confirm authorization? (type 'AUTORIZO'): ",
+        "brute.confirm": "Confirm authorization? (type 'AUTHORIZE'): ",
+        "brute.confirm_word": "AUTHORIZE",
         "brute.wordlist_not_found": "Wordlist not found: {path}",
         "brute.cupp_not_found": "CUPP not found. Clone: git clone https://github.com/Mebus/cupp.git",
         "brute.cupp_err": "Error running CUPP: {err}",
@@ -189,6 +190,7 @@ MESSAGES: dict[str, dict[str, str]] = {
         "recon.error": "Error: {err}",
         "recon.traceroute_priv": "traceroute requires root/admin privilege",
         "recon.scapy_err": "scapy: {err}",
+        "recon.axfr_no_ns": "Could not resolve NS records for {d}: {err}",
         # dns chooser
         "dns.select": "Select the DNS record type:",
         "dns.back": "Back",
@@ -261,6 +263,7 @@ MESSAGES: dict[str, dict[str, str]] = {
         "brute.warn_authorized": "[!] Use apenas em alvos com autorização por escrito.",
         "brute.warn_crime": "[!] Uso não autorizado é crime (Lei 12.737/12, CFAA, etc).",
         "brute.confirm": "Confirmar autorização? (digite 'AUTORIZO'): ",
+        "brute.confirm_word": "AUTORIZO",
         "brute.wordlist_not_found": "Wordlist não encontrada: {path}",
         "brute.cupp_not_found": "CUPP não encontrado. Clone: git clone https://github.com/Mebus/cupp.git",
         "brute.cupp_err": "Erro ao rodar CUPP: {err}",
@@ -385,6 +388,7 @@ MESSAGES: dict[str, dict[str, str]] = {
         "recon.error": "Erro: {err}",
         "recon.traceroute_priv": "traceroute requer privilégio root/admin",
         "recon.scapy_err": "scapy: {err}",
+        "recon.axfr_no_ns": "Não foi possível resolver os NS de {d}: {err}",
         # dns chooser
         "dns.select": "Selecione o tipo de registro DNS:",
         "dns.back": "Voltar",

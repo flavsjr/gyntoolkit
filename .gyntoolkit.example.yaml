@@ -5,6 +5,7 @@
 
 scan:
   default_type: "fast"          # "fast" (top 21 portas) ou "full" (1-65535)
+  concurrency: 100               # sondas simultâneas (limita o full scan)
 
 brute:
   ssh_workers: 8
@@ -29,8 +30,9 @@ ui:
 export:
   dir: "reports"                 # diretório de saída dos relatórios
   auto: false                    # true = exporta sem perguntar
-  format: "json"                 # formato quando auto=true: json | html
+  format: "json"                 # formato quando auto=true: json | html | csv | md
 
 api_keys:
   hibp: ""                       # reservado (endpoints atuais são públicos)
   shodan: ""
+  nvd: ""                        # opcional: eleva o rate-limit do CVE lookup (NVD)

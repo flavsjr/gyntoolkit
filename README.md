@@ -81,6 +81,7 @@
 | 9 | **HIBP Breach Check** | Domain → known breaches via Have I Been Pwned |
 | 10 | **MAC Vendor Lookup** | `api.macvendors.com` — OUI → vendor |
 | 11 | **Traceroute (TCP)** | `scapy` — hops + RTT (needs privilege) |
+| 12 | **DNS Zone Transfer (AXFR)** | `dnspython` — tries AXFR against each authoritative NS |
 
 ### `[2]` Brute Force
 
@@ -160,6 +161,43 @@ An interactive dark CLI opens with a numbered menu. Commands are entered at the
 
 ---
 
+## Non-interactive CLI (scriptable)
+
+Pass a subcommand to run a single action and print the result as JSON on stdout
+(pipe-friendly) — no menu. Omit the subcommand to open the interactive menu.
+
+```bash
+gyntoolkit recon dns example.com --type MX        # DNS lookup
+gyntoolkit recon axfr example.com                 # zone transfer attempt
+gyntoolkit recon ssl example.com --port 443       # TLS cert
+gyntoolkit scan 127.0.0.1 --type fast             # port scan + CVEs
+gyntoolkit scan 192.168.0.0/24                    # host discovery (CIDR)
+gyntoolkit utils hash "text" --algo sha1
+gyntoolkit utils jwt <token>
+```
+
+Global flags (place after the subcommand): `-o/--output DIR` saves a report,
+`-f/--format {json,html,csv,md}` picks its format, `-q/--quiet` silences stdout,
+`--lang {en,pt}` overrides the language.
+
+```bash
+gyntoolkit scan scanme.example.com -o reports -f md     # also save a Markdown report
+gyntoolkit recon geo 1.1.1.1 -o reports -f csv -q       # CSV only, no stdout
+```
+
+Active attacks are available but require explicit authorization:
+
+```bash
+gyntoolkit brute ssh HOST --users users.txt --passwords pass.txt --authorize
+gyntoolkit brute http URL  --users admin --passwords pass.txt --mode form \
+  --user-field user --pass-field pass --fail-signature "Invalid" --authorize
+```
+
+Without `--authorize`, brute subcommands abort — you confirm you have **written
+authorization** for the target.
+
+---
+
 ## Example
 
 Target: the **local security lab** (never a third-party system).
@@ -213,8 +251,8 @@ Full walkthrough: [`docs/security-lab.md`](docs/security-lab.md) and
 
 ## Reports
 
-After scans and recon lookups, the CLI offers to export results as **JSON** or a
-dark-themed **HTML report**. Files are written to
+After scans and recon lookups, the CLI offers to export results as **JSON**, a
+dark-themed **HTML report**, **CSV** or **Markdown**. Files are written to
 `reports/<module>-<timestamp>.<fmt>` (configurable via `export.dir`; set
 `export.auto: true` to export without prompting). Details in
 [`docs/reports.md`](docs/reports.md).

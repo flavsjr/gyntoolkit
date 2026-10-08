@@ -8,14 +8,21 @@ import ssl
 from datetime import datetime, timezone
 from typing import Any
 
+import dns.query
 import dns.resolver
+import dns.zone
 import requests
+import urllib3
 import whois
 from colorama import Fore, Style
 from scapy.all import IP, TCP, sr1
 
 from . import i18n
 from .core import PROMPT, log, sanitize_input
+
+# http_fingerprint usa verify=False de propósito (inspeção, não validação TLS);
+# silencia o aviso p/ não poluir a saída da CLI.
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 def whois_lookup(domain: str):
@@ -51,6 +58,40 @@ def dns_lookup(domain: str,
         return [i18n.t("dns.nxdomain", d=domain)]
     except Exception as e:
         return [i18n.t("dns.error", err=e)]
+
+def zone_transfer(domain: str, timeout: int = 10) -> dict[str, Any]:
+    """Tenta DNS zone transfer (AXFR) em cada nameserver autoritativo do domínio.
+
+    Uma transferência de zona bem-sucedida expõe todos os registros DNS internos
+    e é uma misconfiguração clássica. Retorna, por nameserver, os registros obtidos
+    ou o motivo da recusa/erro.
+    """
+    domain = sanitize_input(domain, r"[A-Za-z0-9.-]")
+    result: dict[str, Any] = {"domain": domain, "nameservers": {}, "vulnerable": False}
+
+    try:
+        ns_records = [str(r).rstrip(".") for r in dns.resolver.resolve(domain, "NS", lifetime=timeout)]
+    except Exception as e:
+        return {"erro": i18n.t("recon.axfr_no_ns", d=domain, err=e)}
+
+    for ns in ns_records:
+        try:
+            ns_ip = socket.gethostbyname(ns)
+        except socket.gaierror as e:
+            result["nameservers"][ns] = {"erro": i18n.t("recon.resolve_fail_simple", err=e)}
+            continue
+        try:
+            zone = dns.zone.from_xfr(dns.query.xfr(ns_ip, domain, lifetime=timeout))
+            records = [
+                f"{name} {zone[name].to_text(name)}"
+                for name in sorted(zone.nodes.keys(), key=str)
+            ]
+            result["nameservers"][ns] = {"status": "AXFR_ALLOWED", "records": records}
+            result["vulnerable"] = True
+        except Exception as e:
+            result["nameservers"][ns] = {"status": "refused", "detail": str(e)}
+    return result
+
 
 def geo_ip(target: str) -> dict[str, str]:
     """Geolocalização de IP/host via ip-api.com (free tier, sem key)."""

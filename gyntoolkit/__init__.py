@@ -29,7 +29,7 @@ from .core import (
     sanitize_input,
     show_menu,
 )
-from .export import export_html, export_json, save_report
+from .export import export_csv, export_html, export_json, export_md, save_report
 from .recon import (
     DNS_TYPES,
     TECH_SIGNATURES,
@@ -45,6 +45,7 @@ from .recon import (
     subdomain_enum,
     traceroute,
     whois_lookup,
+    zone_transfer,
 )
 from .scan import (
     check_vulnerabilities,
@@ -67,14 +68,16 @@ __all__ = [
     # recon
     "whois_lookup", "dns_lookup", "geo_ip", "reverse_dns", "subdomain_enum",
     "ssl_inspect", "http_fingerprint", "internetdb_lookup", "hibp_breaches",
-    "mac_vendor", "traceroute", "escolher_tipo_dns", "DNS_TYPES", "TECH_SIGNATURES",
+    "mac_vendor", "traceroute", "zone_transfer", "escolher_tipo_dns",
+    "DNS_TYPES", "TECH_SIGNATURES",
     # brute
     "print_ethical_warning", "load_wordlist", "cupp_generate",
     "ssh_bruteforce", "http_bruteforce",
     # utils
     "hash_text", "hash_file", "b64_encode", "b64_decode", "jwt_decode",
     # config / export / ui
-    "CONFIG", "DEFAULTS", "load_config", "save_report", "export_json", "export_html", "ui", "i18n",
+    "CONFIG", "DEFAULTS", "load_config", "save_report",
+    "export_json", "export_html", "export_csv", "export_md", "ui", "i18n",
     # cli
     "main_flow", "main_entry",
 ]
