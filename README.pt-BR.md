@@ -1,4 +1,4 @@
-# GynToolkit v2.0
+# GynToolkit v2.1
 
 **🌐 Idioma / Language:** **Português (BR)** · [English](README.md)
 
@@ -6,7 +6,7 @@
  ██████╗██╗   ██╗███╗   ██╗    ████████╗ ██████╗  ██████╗ ██╗     ██╗  ██╗██╗████████╗
 ██╔════╝╚██╗ ██╔╝████╗  ██║    ╚══██╔══╝██╔═══██╗██╔═══██╗██║     ██║ ██╔╝██║╚══██╔══╝
 ██║  ███╗╚████╔╝ ██╔██╗ ██║       ██║   ██║   ██║██║   ██║██║     █████╔╝ ██║   ██║
-██║   ██║ ╚██╔╝  ██║╚██╗██║       ██║   ██║   ██║██║   ██║██║     ██╔═██╗ ██║   ██║   v2.0
+██║   ██║ ╚██╔╝  ██║╚██╗██║       ██║   ██║   ██║██║   ██║██║     ██╔═██╗ ██║   ██║   v2.1
 ╚██████╔╝  ██║   ██║ ╚████║       ██║   ╚██████╔╝╚██████╔╝███████╗██║  ██╗██║   ██║   by: PH,Fl4vs
  ╚═════╝   ╚═╝   ╚═╝  ╚═══╝       ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝╚═╝  ╚═╝╚═╝   ╚═╝
 ```
@@ -48,14 +48,28 @@ SSH/HTTP e utilitários crypto — tudo em um único CLI dark com interface `gyn
 
 **Pré-requisitos:** Python 3.10+ e `pip`.
 
+### Via PyPI (recomendado)
+
+```bash
+pip install gyntoolkit
+gyntoolkit          # abre a CLI interativa
+```
+
+Instala o comando `gyntoolkit` e todas as dependências.
+
+### A partir do código-fonte (desenvolvimento)
+
 ```bash
 git clone https://github.com/flavsjr/gyntoolkit.git
 cd gyntoolkit
-pip install -r requirements.txt
-
-# Opcional (recon avançado / brute-force)
-git clone https://github.com/Mebus/cupp.git    # gerador de wordlist customizada
+pip install -e .
+gyntoolkit          # ou: python -m gyntoolkit
 ```
+
+> **Opcional — wordlists de brute-force:** o módulo "CUPP wordlist" é um wrapper
+> do [CUPP](https://github.com/Mebus/cupp). Clone-o ao lado de onde você roda o
+> GynToolkit (`git clone https://github.com/Mebus/cupp.git`); não é dependência
+> Python e não é instalado pelo pip.
 
 No **Windows**, para SYN scan e traceroute com privilégio raw socket, instale
 [Npcap](https://npcap.com) e rode o `gyntoolkit` em terminal **admin**. Sem Npcap,
@@ -66,6 +80,8 @@ o SYN scan degrada para TCP connect scan automaticamente.
 ## Uso
 
 ```bash
+gyntoolkit          # após `pip install gyntoolkit`
+# ou, a partir do código-fonte:
 python -m gyntoolkit
 ```
 
@@ -73,13 +89,6 @@ Interface interativa dark com menu numérico. Comandos entram via `gyntoolkit:~#
 
 Saída em tabelas/painéis via [`rich`](https://github.com/Textualize/rich) quando
 disponível — degrada para texto colorido puro se `rich` não estiver instalado.
-
-**Instalação como CLI system-wide (opcional):**
-
-```bash
-pip install -e .
-gyntoolkit    # entry point instalado via pyproject
-```
 
 ---
 

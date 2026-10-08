@@ -6,7 +6,7 @@
  ██████╗██╗   ██╗███╗   ██╗    ████████╗ ██████╗  ██████╗ ██╗     ██╗  ██╗██╗████████╗
 ██╔════╝╚██╗ ██╔╝████╗  ██║    ╚══██╔══╝██╔═══██╗██╔═══██╗██║     ██║ ██╔╝██║╚══██╔══╝
 ██║  ███╗╚████╔╝ ██╔██╗ ██║       ██║   ██║   ██║██║   ██║██║     █████╔╝ ██║   ██║
-██║   ██║ ╚██╔╝  ██║╚██╗██║       ██║   ██║   ██║██║   ██║██║     ██╔═██╗ ██║   ██║   v2.0
+██║   ██║ ╚██╔╝  ██║╚██╗██║       ██║   ██║   ██║██║   ██║██║     ██╔═██╗ ██║   ██║   v2.1
 ╚██████╔╝  ██║   ██║ ╚████║       ██║   ╚██████╔╝╚██████╔╝███████╗██║  ██╗██║   ██║   by: PH,Fl4vs
  ╚═════╝   ╚═╝   ╚═╝  ╚═══╝       ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝╚═╝  ╚═╝╚═╝   ╚═╝
 ```
@@ -117,27 +117,28 @@
 
 **Requirements:** Python 3.10+ and `pip`.
 
-### From source (current method)
+### From PyPI (recommended)
+
+```bash
+pip install gyntoolkit
+gyntoolkit          # launch the interactive CLI
+```
+
+That installs the `gyntoolkit` command and all dependencies.
+
+### From source (development)
 
 ```bash
 git clone https://github.com/flavsjr/gyntoolkit.git
 cd gyntoolkit
-pip install -r requirements.txt
-
-# Optional: custom wordlist generator for brute-force
-git clone https://github.com/Mebus/cupp.git
-```
-
-### As a CLI (editable install)
-
-```bash
 pip install -e .
-gyntoolkit          # entry point installed via pyproject
+gyntoolkit          # or: python -m gyntoolkit
 ```
 
-> **PyPI:** the package metadata is ready for publishing. Once released, install
-> with `pip install gyntoolkit`. See [`docs/installation.md`](docs/installation.md)
-> for the maintainer publish procedure.
+> **Optional — brute-force wordlists:** the "CUPP wordlist" module wraps
+> [CUPP](https://github.com/Mebus/cupp). Clone it next to where you run
+> GynToolkit (`git clone https://github.com/Mebus/cupp.git`); it is not a
+> Python dependency and is not installed by pip.
 
 **Windows note:** for SYN scan and traceroute (raw sockets) install
 [Npcap](https://npcap.com) and run in an **admin** terminal. Without Npcap, SYN
@@ -148,9 +149,9 @@ scan degrades to TCP connect scan automatically.
 ## Quick Start
 
 ```bash
-python -m gyntoolkit     # run from source
-# or, after `pip install -e .`
-gyntoolkit
+gyntoolkit               # after `pip install gyntoolkit`
+# or, from a source checkout:
+python -m gyntoolkit
 ```
 
 An interactive dark CLI opens with a numbered menu. Commands are entered at the
@@ -165,7 +166,7 @@ Target: the **local security lab** (never a third-party system).
 
 ```bash
 # 1. Launch GynToolkit
-python -m gyntoolkit
+gyntoolkit
 
 # 2. Pick [3] Advanced Scanning → scan 127.0.0.1
 # 3. Inspect discovered services / banners
@@ -243,7 +244,7 @@ locale and falls back to English.
 
 | Doc | Content |
 |-----|---------|
-| [`docs/installation.md`](docs/installation.md) | Install from source, editable install, PyPI publish |
+| [`docs/installation.md`](docs/installation.md) | Install from PyPI or source, and the PyPI publish flow |
 | [`docs/quickstart.md`](docs/quickstart.md) | First run, menu walkthrough |
 | [`docs/reconnaissance.md`](docs/reconnaissance.md) | Recon modules (WHOIS, DNS, TLS, fingerprint, …) |
 | [`docs/scanning.md`](docs/scanning.md) | Port scan, banners, CVE lookup, host discovery |
