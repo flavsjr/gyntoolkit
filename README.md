@@ -82,6 +82,7 @@
 | 10 | **MAC Vendor Lookup** | `api.macvendors.com` — OUI → vendor |
 | 11 | **Traceroute (TCP)** | `scapy` — hops + RTT (needs privilege) |
 | 12 | **DNS Zone Transfer (AXFR)** | `dnspython` — tries AXFR against each authoritative NS |
+| 13 | **Web Content Discovery** | `aiohttp` — robots.txt / sitemap / security.txt + built-in path wordlist |
 
 ### `[2]` Brute Force
 
@@ -169,6 +170,7 @@ Pass a subcommand to run a single action and print the result as JSON on stdout
 ```bash
 gyntoolkit recon dns example.com --type MX        # DNS lookup
 gyntoolkit recon axfr example.com                 # zone transfer attempt
+gyntoolkit recon webscan http://example.com       # web content discovery
 gyntoolkit recon ssl example.com --port 443       # TLS cert
 gyntoolkit scan 127.0.0.1 --type fast             # port scan + CVEs
 gyntoolkit scan 192.168.0.0/24                    # host discovery (CIDR)
