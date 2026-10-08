@@ -4,10 +4,12 @@
 import asyncio
 import contextlib
 import ipaddress
+import json
 import os
 import re
 import threading
 import time
+from pathlib import Path
 
 import requests
 from colorama import Fore, Style
@@ -26,6 +28,15 @@ _NVD_MIN_INTERVAL_NO_KEY = 6.0
 _NVD_MIN_INTERVAL_KEY = 0.6
 _nvd_lock = threading.Lock()
 _nvd_last_call = 0.0
+
+# Enriquecimento de CVE: EPSS (probabilidade de exploração) e CISA KEV
+# (vulnerabilidades sabidamente exploradas). Ambos públicos, sem key.
+_EPSS_URL = "https://api.first.org/data/v1/epss"
+_KEV_URL = "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
+_KEV_CACHE_PATH = Path.home() / ".gyntoolkit" / "kev.json"
+_KEV_DEFAULT_TTL = 86400  # 24h
+_kev_lock = threading.Lock()
+_kev_cache: set[str] | None = None  # cache em memória por processo
 
 
 async def syn_scan(target: str, port: int) -> tuple[int, bool]:
@@ -176,8 +187,45 @@ def _build_cpe(product: str, version: str) -> str:
     return f"cpe:2.3:a:*:{product}:{version}:*:*:*:*:*:*:*"
 
 
-def _nvd_get(params: dict, api_key: str) -> list[str]:
-    """Faz uma requisição ao NVD e retorna até 5 CVE ids. [] em erro/sem dados."""
+def _severity_from_cvss(score: float | None) -> str:
+    """Mapeia CVSS base score → faixa de severidade (tokens neutros p/ i18n)."""
+    if score is None:
+        return "unknown"
+    if score >= 9.0:
+        return "critical"
+    if score >= 7.0:
+        return "high"
+    if score >= 4.0:
+        return "medium"
+    if score > 0.0:
+        return "low"
+    return "unknown"
+
+
+def _extract_cvss(cve_item: dict) -> tuple[float | None, str | None]:
+    """Extrai (baseScore, severity) do item NVD. Preferência v3.1 > v3.0 > v2."""
+    metrics = cve_item.get("cve", {}).get("metrics", {})
+    for key in ("cvssMetricV31", "cvssMetricV30"):
+        entries = metrics.get(key)
+        if entries:
+            data = entries[0].get("cvssData", {})
+            score = data.get("baseScore")
+            sev = (data.get("baseSeverity") or "").lower() or None
+            return (score, sev)
+    v2 = metrics.get("cvssMetricV2")
+    if v2:
+        score = v2[0].get("cvssData", {}).get("baseScore")
+        sev = (v2[0].get("baseSeverity") or "").lower() or None
+        return (score, sev or _severity_from_cvss(score))
+    return (None, None)
+
+
+def _nvd_get(params: dict, api_key: str) -> list[dict]:
+    """Requisita o NVD e retorna até 5 CVEs com CVSS. [] em erro/sem dados.
+
+    Cada item: ``{"id", "cvss", "severity"}`` (severity deriva do CVSS quando o
+    NVD não informa baseSeverity explícito).
+    """
     headers = {"User-Agent": "gyntoolkit/2.0"}
     if api_key:
         headers["apiKey"] = api_key
@@ -191,18 +239,98 @@ def _nvd_get(params: dict, api_key: str) -> list[str]:
         )
         response.raise_for_status()
         data = response.json()
-        return [item["cve"]["id"] for item in data.get("vulnerabilities", [])[:5]]
+        out = []
+        for item in data.get("vulnerabilities", [])[:5]:
+            cvss, sev = _extract_cvss(item)
+            out.append({
+                "id": item["cve"]["id"],
+                "cvss": cvss,
+                "severity": sev or _severity_from_cvss(cvss),
+            })
+        return out
     except (requests.RequestException, ValueError, KeyError) as e:
         log.warning("NVD lookup falhou (%s): %s", params, e)
         return []
 
 
-def check_vulnerabilities(service: str, api_key: str = "") -> list[str]:
-    """Consulta CVEs no NVD a partir de um banner/serviço (com rate-limit).
+def _epss_scores(cve_ids: list[str], timeout: int = 10) -> dict[str, float]:
+    """Busca scores EPSS (prob. de exploração) em lote. {} em erro."""
+    if not cve_ids:
+        return {}
+    try:
+        response = requests.get(
+            _EPSS_URL,
+            params={"cve": ",".join(cve_ids)},
+            headers={"User-Agent": "gyntoolkit/2.0"},
+            timeout=timeout,
+        )
+        response.raise_for_status()
+        data = response.json()
+        return {
+            row["cve"]: float(row["epss"])
+            for row in data.get("data", [])
+            if row.get("cve") and row.get("epss") is not None
+        }
+    except (requests.RequestException, ValueError, KeyError, TypeError) as e:
+        log.warning("EPSS lookup falhou: %s", e)
+        return {}
 
-    Estratégia: parseia produto+versão do banner. Com versão, consulta por CPE
-    (``virtualMatchString``), bem mais preciso que keyword. Sem resultado (ou sem
-    versão), cai para ``keywordSearch`` com 'produto versão' ou só o produto.
+
+def _load_kev(ttl: int = _KEV_DEFAULT_TTL, timeout: int = 15) -> set[str]:
+    """Carrega o catálogo CISA KEV (set de CVE ids), com cache em disco + memória.
+
+    Cache em ``~/.gyntoolkit/kev.json``; rebaixa gracioso p/ cache velho ou vazio
+    se a rede falhar.
+    """
+    global _kev_cache
+    with _kev_lock:
+        if _kev_cache is not None:
+            return _kev_cache
+        # cache em disco válido?
+        try:
+            if _KEV_CACHE_PATH.is_file() and (time.time() - _KEV_CACHE_PATH.stat().st_mtime) < ttl:
+                ids = set(json.loads(_KEV_CACHE_PATH.read_text(encoding="utf-8")))
+                _kev_cache = ids
+                return ids
+        except (OSError, ValueError) as e:
+            log.debug("KEV cache leitura falhou: %s", e)
+        # baixa feed
+        try:
+            response = requests.get(_KEV_URL, headers={"User-Agent": "gyntoolkit/2.0"}, timeout=timeout)
+            response.raise_for_status()
+            ids = {v["cveID"] for v in response.json().get("vulnerabilities", []) if v.get("cveID")}
+            with contextlib.suppress(OSError):
+                _KEV_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
+                _KEV_CACHE_PATH.write_text(json.dumps(sorted(ids)), encoding="utf-8")
+            _kev_cache = ids
+            return ids
+        except (requests.RequestException, ValueError, KeyError) as e:
+            log.warning("KEV feed falhou: %s", e)
+        # fallback: cache velho em disco, se houver
+        try:
+            if _KEV_CACHE_PATH.is_file():
+                return set(json.loads(_KEV_CACHE_PATH.read_text(encoding="utf-8")))
+        except (OSError, ValueError):
+            pass
+        _kev_cache = set()
+        return _kev_cache
+
+
+def check_vulnerabilities(
+    service: str,
+    api_key: str = "",
+    enrich: bool = True,
+    kev_ttl: int = _KEV_DEFAULT_TTL,
+) -> list[dict]:
+    """Consulta CVEs no NVD a partir de um banner/serviço e os enriquece.
+
+    Estratégia de match: parseia produto+versão do banner. Com versão, consulta
+    por CPE (``virtualMatchString``), bem mais preciso que keyword. Sem resultado
+    (ou sem versão), cai para ``keywordSearch`` com 'produto versão' ou só o produto.
+
+    Enriquecimento (``enrich=True``): anexa ``epss`` (prob. exploração) e ``kev``
+    (bool, CISA Known Exploited). Cada item:
+    ``{"id","cvss","severity","epss","kev"}``.
     """
     if not service or service.lower() in {"desconhecido", "unknown"}:
         return []
@@ -211,13 +339,31 @@ def check_vulnerabilities(service: str, api_key: str = "") -> list[str]:
     if not product:
         return []
 
+    cves: list[dict] = []
     if version:
         cves = _nvd_get({"virtualMatchString": _build_cpe(product, version)}, api_key)
-        if cves:
-            return cves
-        # fallback: keyword 'produto versão'
-        return _nvd_get({"keywordSearch": f"{product} {version}"}, api_key)
-    return _nvd_get({"keywordSearch": product}, api_key)
+        if not cves:
+            cves = _nvd_get({"keywordSearch": f"{product} {version}"}, api_key)
+    else:
+        cves = _nvd_get({"keywordSearch": product}, api_key)
+
+    if not cves:
+        return []
+
+    for c in cves:
+        c.setdefault("epss", None)
+        c.setdefault("kev", False)
+
+    if enrich:
+        ids = [c["id"] for c in cves]
+        epss = _epss_scores(ids)
+        kev = _load_kev(ttl=kev_ttl)
+        for c in cves:
+            c["epss"] = epss.get(c["id"])
+            c["kev"] = c["id"] in kev
+            if c["kev"]:
+                c["severity"] = "critical"  # KEV é sempre prioridade máxima
+    return cves
 
 def network_discovery(cidr: str, timeout: int = 2) -> list[str]:
     """Descobre hosts ativos em rede via ARP scan (requer privilégio)."""
@@ -242,16 +388,44 @@ def network_discovery(cidr: str, timeout: int = 2) -> list[str]:
         print(f"{Fore.RED}{i18n.t('scan.arp_fail', err=e)}{Style.RESET_ALL}")
         return []
 
+# Ordem de severidade p/ computar o risco do host (maior vence).
+_SEVERITY_RANK = {"unknown": 0, "low": 1, "medium": 2, "high": 3, "critical": 4}
+
+
+def _host_risk(vulns: list[dict]) -> str:
+    """Risco do host = maior severidade entre os CVEs. Sem CVE → 'low'."""
+    if not vulns:
+        return "low"
+    top = max((_SEVERITY_RANK.get(v.get("severity", "unknown"), 0) for v in vulns), default=0)
+    for name, rank in _SEVERITY_RANK.items():
+        if rank == top:
+            return name if name != "unknown" else "low"
+    return "low"
+
+
+def _filter_vulns(vulns: list[dict], min_cvss: float, kev_only: bool) -> list[dict]:
+    """Aplica filtros de exibição: CVSS mínimo e/ou somente KEV."""
+    out = vulns
+    if kev_only:
+        out = [v for v in out if v.get("kev")]
+    if min_cvss > 0:
+        out = [v for v in out if (v.get("cvss") or 0) >= min_cvss]
+    return out
+
+
 async def perform_scan(
     target: str,
     scan_type: str,
     concurrency: int = DEFAULT_CONCURRENCY,
     nvd_api_key: str = "",
+    min_cvss: float = 0.0,
+    kev_only: bool = False,
 ) -> dict[int, dict]:
     """Executa varredura completa com análise de vulnerabilidades.
 
     ``concurrency`` limita sondas simultâneas (evita esgotar sockets no full scan).
     ``nvd_api_key`` (opcional) eleva o rate-limit da consulta de CVEs no NVD.
+    ``min_cvss``/``kev_only`` filtram os CVEs exibidos (não a coleta).
     """
     # aceita canônico "fast" e legados pt ("rápido"/"rapido"); resto = full range
     ports = TOP_PORTS if scan_type in ("fast", "rápido", "rapido") else range(1, 65536)
@@ -285,21 +459,22 @@ async def perform_scan(
     # Fase 3: Analisar vulnerabilidades. O lookup usa o banner inteiro (parseia
     # produto+versão → CPE). Dedup por banner: consulta o NVD uma vez por banner
     # distinto (rate-limit caro) e reaproveita o resultado.
-    vuln_cache: dict[str, list[str]] = {}
+    vuln_cache: dict[str, list[dict]] = {}
     for port in open_ports:
         banner = banners[port]
         service = banner.split()[0] if banner else "unknown"
         if banner not in vuln_cache:
             vuln_cache[banner] = check_vulnerabilities(banner, api_key=nvd_api_key)
-        vulns = vuln_cache[banner]
+        vulns = _filter_vulns(vuln_cache[banner], min_cvss, kev_only)
 
         # 'service' e 'risco' são tokens neutros (DATA); o display os localiza
-        # via i18n (scan.service_unknown / scan.risk_high / scan.risk_low).
+        # via i18n (scan.service_unknown / scan.risk_*). 'vulnerabilidades' agora
+        # é lista de dicts enriquecidos {id, cvss, severity, epss, kev}.
         results[port] = {
             'service': service,
             'banner': banners[port],
             'vulnerabilidades': vulns,
-            'risco': "high" if vulns else "low"
+            'risco': _host_risk(vulns),
         }
 
     return results
