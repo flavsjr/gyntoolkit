@@ -109,6 +109,20 @@ def test_check_vulnerabilities_unknown_service():
     assert check_vulnerabilities("unknown") == []
 
 
+# ---------- _nvd_get (parse real do response, rede mockada) ----------
+def test_nvd_get_parses_cvss(monkeypatch):
+    payload = {"vulnerabilities": [
+        {"cve": {"id": "CVE-1", "metrics": {
+            "cvssMetricV31": [{"cvssData": {"baseScore": 9.8, "baseSeverity": "CRITICAL"}}]}}},
+        {"cve": {"id": "CVE-2", "metrics": {}}},   # sem CVSS → severity unknown
+    ]}
+    monkeypatch.setattr(scan, "_nvd_throttle", lambda has_key: None)
+    monkeypatch.setattr(scan.requests, "get", lambda *a, **k: _FakeResp(payload))
+    out = scan._nvd_get({"keywordSearch": "nginx"}, api_key="")
+    assert out[0] == {"id": "CVE-1", "cvss": 9.8, "severity": "critical"}
+    assert out[1]["id"] == "CVE-2" and out[1]["severity"] == "unknown"
+
+
 # ---------- formatação CLI ----------
 def test_fmt_cve_compact():
     s = _fmt_cve({"id": "CVE-1", "cvss": 9.8, "epss": 0.9, "kev": True})

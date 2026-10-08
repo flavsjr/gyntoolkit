@@ -7,6 +7,9 @@ All notable changes to this project are documented here. The format is based on
 ## [Unreleased]
 
 ### Added
+- Offline tests for the network paths: `_nvd_get` CVSS parsing, `shodan_host`
+  (200/401/404), and `geo_ip` / `internetdb_lookup` / `hibp_breaches` /
+  `http_fingerprint` / `subdomain_enum` — all with mocked HTTP, no real requests.
 - Docs for the new modules: `docs/cli.md` (non-interactive CLI), `docs/audit.md`
   and `docs/brute.md`; `reconnaissance.md` (AXFR, webscan, Shodan, email security),
   `scanning.md` (CVE enrichment) and `reports.md` (CSV/Markdown) updated, plus the

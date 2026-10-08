@@ -42,3 +42,40 @@ def test_cli_shodan_no_key(capsys):
     assert rc == 0
     out = json.loads(capsys.readouterr().out)
     assert "erro" in out       # sem key configurada → erro orientando
+
+
+# ---------- paths HTTP (rede mockada) ----------
+import gyntoolkit.recon as recon  # noqa: E402
+
+
+class _Resp:
+    def __init__(self, status=200, payload=None):
+        self.status_code = status
+        self._payload = payload
+
+    def raise_for_status(self):
+        if self.status_code >= 400:
+            raise recon.requests.HTTPError(f"HTTP {self.status_code}")
+
+    def json(self):
+        return self._payload
+
+
+def test_shodan_host_200_summarized(monkeypatch):
+    raw = {"ip_str": "1.2.3.4", "ports": [443, 80], "data": [{"port": 80, "product": "nginx"}]}
+    monkeypatch.setattr(recon.requests, "get", lambda *a, **k: _Resp(200, raw))
+    out = shodan_host("1.2.3.4", api_key="k")
+    assert out["ip"] == "1.2.3.4"
+    assert out["ports"] == [80, 443]
+
+
+def test_shodan_host_401(monkeypatch):
+    monkeypatch.setattr(recon.requests, "get", lambda *a, **k: _Resp(401))
+    out = shodan_host("1.2.3.4", api_key="bad")
+    assert "erro" in out and "401" in out["erro"]
+
+
+def test_shodan_host_404(monkeypatch):
+    monkeypatch.setattr(recon.requests, "get", lambda *a, **k: _Resp(404))
+    out = shodan_host("1.2.3.4", api_key="k")
+    assert "info" in out
