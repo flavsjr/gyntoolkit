@@ -1,45 +1,45 @@
 ---
 name: Bug report
-about: Relatar um erro ou comportamento inesperado no GynToolkit
+about: Report an error or unexpected behavior in GynToolkit
 title: "[BUG] "
 labels: bug
 assignees: ''
 ---
 
-## Descrição do bug
+## Bug description
 
-Descrição clara e concisa do problema.
+A clear and concise description of the problem.
 
-## Comportamento esperado
+## Expected behavior
 
-O que você esperava que acontecesse.
+What you expected to happen.
 
-## Comportamento atual
+## Actual behavior
 
-O que de fato aconteceu.
+What actually happened.
 
-## Passos para reproduzir
+## Steps to reproduce
 
-1. Rode `...`
-2. Selecione o módulo `...`
-3. Informe o alvo `...`
-4. Veja o erro
+1. Run `...`
+2. Select the `...` module
+3. Enter the target `...`
+4. See the error
 
-## Ambiente
+## Environment
 
-- **SO:** (ex.: Windows 11, Ubuntu 24.04, macOS 14)
-- **Python:** (saída de `python --version`)
-- **Versão do GynToolkit:** (ex.: 2.0.0)
-- **Modo de instalação:** (`pip install`, `python -m gyntoolkit`, clone)
+- **OS:** (e.g. Windows 11, Ubuntu 24.04, macOS 14)
+- **Python:** (output of `python --version`)
+- **GynToolkit version:** (e.g. 2.1.1)
+- **Install method:** (`pip install`, `python -m gyntoolkit`, clone)
 
-## Logs / saída
+## Logs / output
 
 ```
-Cole aqui a saída relevante, traceback ou conteúdo do log (.gyntoolkit.log).
+Paste the relevant output, traceback, or log content (.gyntoolkit.log) here.
 ```
 
-> Remova qualquer dado sensível (IPs reais, credenciais, tokens) antes de enviar.
+> Remove any sensitive data (real IPs, credentials, tokens) before submitting.
 
-## Contexto adicional
+## Additional context
 
-Prints, configuração `.gyntoolkit.yaml` (sanitizada) ou qualquer outro detalhe útil.
+Screenshots, `.gyntoolkit.yaml` config (sanitized), or any other useful detail.

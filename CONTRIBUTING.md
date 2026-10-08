@@ -1,55 +1,56 @@
-# Contribuindo com o GynToolkit
+# Contributing to GynToolkit
 
-Obrigado pelo interesse em contribuir! Este guia cobre o fluxo de trabalho,
-padrões de código e como validar suas mudanças antes de abrir um Pull Request.
+Thanks for your interest in contributing! This guide covers the workflow, code
+standards, and how to validate your changes before opening a Pull Request.
 
-> **Aviso ético:** o GynToolkit é uma ferramenta de pentest. Contribua apenas
-> com funcionalidades destinadas a testes de segurança **autorizados**. PRs que
-> visem facilitar uso ofensivo contra alvos sem permissão serão rejeitados.
+> **Ethical notice:** GynToolkit is a pentest tool. Only contribute features
+> intended for **authorized** security testing. PRs that aim to facilitate
+> offensive use against targets without permission will be rejected.
 
 ---
 
-## Sumário
+## Table of Contents
 
-- [Código de conduta](#código-de-conduta)
-- [Setup do ambiente de dev](#setup-do-ambiente-de-dev)
-- [Fluxo de contribuição](#fluxo-de-contribuição)
-- [Padrão de commits](#padrão-de-commits)
+- [Code of conduct](#code-of-conduct)
+- [Dev environment setup](#dev-environment-setup)
+- [Contribution workflow](#contribution-workflow)
+- [Commit convention](#commit-convention)
 - [Style guide](#style-guide)
-- [Testes](#testes)
-- [Abrindo o Pull Request](#abrindo-o-pull-request)
+- [Tests](#tests)
+- [Opening the Pull Request](#opening-the-pull-request)
 
 ---
 
-## Código de conduta
+## Code of conduct
 
-Seja respeitoso e objetivo. Discussões técnicas são bem-vindas; ataques pessoais
-não. Reporte comportamento inadequado via issue privada ou contato com os mantenedores.
+Be respectful and objective. Technical discussion is welcome; personal attacks
+are not. Report inappropriate behavior via a private issue or by contacting the
+maintainers. See [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md).
 
 ---
 
-## Setup do ambiente de dev
+## Dev environment setup
 
-Requer **Python 3.10+**.
+Requires **Python 3.10+**.
 
 ```bash
-# 1. Fork e clone
-git clone https://github.com/<seu-usuario>/gyntoolkit.git
+# 1. Fork and clone
+git clone https://github.com/<your-username>/gyntoolkit.git
 cd gyntoolkit
 
-# 2. Ambiente virtual
+# 2. Virtual environment
 python -m venv .venv
 source .venv/bin/activate      # Linux/macOS
 # .venv\Scripts\activate       # Windows PowerShell
 
-# 3. Instale em modo editável com as dependências de dev
+# 3. Install in editable mode with the dev dependencies
 pip install -e ".[dev]"
 ```
 
-As dependências de dev (`ruff`, `mypy`, `pytest`) estão declaradas em
-`[project.optional-dependencies]` no `pyproject.toml`.
+The dev dependencies (`ruff`, `mypy`, `pytest`) are declared under
+`[project.optional-dependencies]` in `pyproject.toml`.
 
-Rode a ferramenta localmente:
+Run the tool locally:
 
 ```bash
 python -m gyntoolkit
@@ -57,94 +58,97 @@ python -m gyntoolkit
 
 ---
 
-## Fluxo de contribuição
+## Contribution workflow
 
-1. Fork o projeto.
-2. Crie uma branch descritiva a partir de `master`:
+1. Fork the project.
+2. Create a descriptive branch off `master`:
    ```bash
-   git checkout -b feature/minha-feature
+   git checkout -b feature/my-feature
    ```
-3. Implemente a mudança mantendo o estilo do código existente.
-4. Rode linter e testes (ver abaixo).
-5. Faça commits seguindo Conventional Commits.
-6. Abra o Pull Request.
+3. Implement the change, matching the existing code style.
+4. Run the linter and tests (see below).
+5. Commit following Conventional Commits.
+6. Open the Pull Request.
 
 ---
 
-## Padrão de commits
+## Commit convention
 
-Usamos **[Conventional Commits](https://www.conventionalcommits.org/)**. Formato:
+We use **[Conventional Commits](https://www.conventionalcommits.org/)**. Format:
 
 ```
-<tipo>(<escopo opcional>): <descrição no imperativo>
+<type>(<optional scope>): <imperative description>
 ```
 
-Tipos aceitos:
+Accepted types:
 
-| Tipo       | Uso                                                        |
+| Type       | Use                                                        |
 |------------|------------------------------------------------------------|
-| `feat`     | Nova funcionalidade ou módulo                              |
-| `fix`      | Correção de bug                                            |
-| `docs`     | Mudanças só em documentação                                |
-| `test`     | Adição ou ajuste de testes                                 |
-| `refactor` | Refatoração sem mudança de comportamento                   |
-| `chore`    | Build, deps, tooling, tarefas de manutenção                |
-| `style`    | Formatação (sem alterar lógica)                            |
-| `perf`     | Melhoria de performance                                    |
+| `feat`     | New feature or module                                      |
+| `fix`      | Bug fix                                                    |
+| `docs`     | Documentation-only changes                                 |
+| `test`     | Adding or adjusting tests                                  |
+| `refactor` | Refactoring with no behavior change                        |
+| `chore`    | Build, deps, tooling, maintenance tasks                    |
+| `style`    | Formatting (no logic change)                               |
+| `perf`     | Performance improvement                                    |
 
-Exemplos:
+Examples:
 
 ```
-feat(recon): adiciona enumeração de buckets S3
-fix(scan): corrige timeout do SYN scan em alvos lentos
-docs(readme): atualiza matriz de módulos
+feat(recon): add S3 bucket enumeration
+fix(scan): fix SYN scan timeout on slow targets
+docs(readme): update module matrix
 ```
 
 ---
 
 ## Style guide
 
-O código é padronizado via **[ruff](https://docs.astral.sh/ruff/)** (lint + import sort),
-configurado no `pyproject.toml` (`line-length = 100`, regras `E, F, W, I, UP, B, SIM`).
+Code is standardized with **[ruff](https://docs.astral.sh/ruff/)** (lint + import
+sort), configured in `pyproject.toml` (`line-length = 100`, rules `E, F, W, I,
+UP, B, SIM`).
 
-Antes de commitar:
+Before committing:
 
 ```bash
-# Checar problemas
+# Check for issues
 ruff check .
 
-# Corrigir automaticamente o que for possível
+# Auto-fix what is possible
 ruff check . --fix
 
-# (Opcional) checagem de tipos
+# (Optional) type checking
 mypy gyntoolkit
 ```
 
-Diretrizes:
+Guidelines:
 
-- Type hints em funções novas.
-- Docstrings curtas explicando intenção (padrão do projeto: português).
-- Sem segredos, IPs reais ou credenciais no código ou nos testes.
+- Type hints on new functions.
+- Short docstrings explaining intent. The existing codebase uses Portuguese
+  docstrings — match the surrounding style within a file.
+- No secrets, real IPs, or credentials in code or tests.
 
 ---
 
-## Testes
+## Tests
 
-### Suite E2E do lab local
+### Local lab E2E suite
 
-O repositório inclui um lab local com servidores mock (SSH/HTTP) e um runner E2E
-que exercita os módulos de brute-force ponta a ponta:
+The repository includes a local lab with mock servers (SSH/HTTP) and an E2E
+runner that exercises the brute-force modules end to end:
 
 ```bash
 python lab/run_e2e.py
 ```
 
-O runner sobe os mocks, roda os ataques contra `127.0.0.1`, valida as credenciais
-esperadas e encerra. Saída esperada: todos os testes com `[OK]` e exit code `0`.
+The runner starts the mocks, runs the attacks against `127.0.0.1`, validates the
+expected credentials, and shuts down. Expected output: all tests `[OK]` and exit
+code `0`.
 
-Rode-o **sempre** antes de abrir um PR que toque em `brute`, `scan` ou no core.
+Run it **always** before opening a PR that touches `brute`, `scan`, or the core.
 
-### Testes unitários
+### Unit tests
 
 ```bash
 pytest
@@ -152,11 +156,12 @@ pytest
 
 ---
 
-## Abrindo o Pull Request
+## Opening the Pull Request
 
-- Descreva **o quê** e **por quê** (não só o quê).
-- Referencie a issue relacionada (`Closes #123`).
-- Garanta que `ruff check .` passa e que `python lab/run_e2e.py` termina com sucesso.
-- Mantenha o PR focado — um objetivo por PR.
+- Describe **what** and **why** (not just what).
+- Reference the related issue (`Closes #123`).
+- Make sure `ruff check .` passes and `python lab/run_e2e.py` finishes
+  successfully.
+- Keep the PR focused — one goal per PR.
 
-Obrigado por contribuir! 🐧
+Thanks for contributing! 🐧
