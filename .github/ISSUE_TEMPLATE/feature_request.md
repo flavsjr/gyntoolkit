@@ -1,43 +1,43 @@
 ---
 name: Feature request
-about: Sugerir uma nova funcionalidade ou módulo para o GynToolkit
+about: Suggest a new feature or module for GynToolkit
 title: "[FEAT] "
 labels: enhancement
 assignees: ''
 ---
 
-## Problema / motivação
+## Problem / motivation
 
-Qual problema esta funcionalidade resolve? Ex.: "Hoje não há como enumerar
-buckets S3 durante o recon..."
+What problem does this feature solve? e.g. "Today there is no way to enumerate
+S3 buckets during recon..."
 
-## Solução proposta
+## Proposed solution
 
-Descrição clara do que você gostaria que fosse adicionado.
+A clear description of what you would like added.
 
-## Tipo de contribuição
+## Contribution type
 
-- [ ] Novo módulo (ex.: recon, scan, brute, utils)
-- [ ] Nova opção em módulo existente
-- [ ] Melhoria de UI / UX
-- [ ] Novo formato de export / relatório
-- [ ] Outro:
+- [ ] New module (e.g. recon, scan, brute, utils)
+- [ ] New option in an existing module
+- [ ] UI / UX improvement
+- [ ] New export / report format
+- [ ] Other:
 
-## Exemplo de uso
+## Usage example
 
 ```
-Como o usuário interagiria com a feature (menu, flags, saída esperada).
+How the user would interact with the feature (menu, flags, expected output).
 ```
 
-## Alternativas consideradas
+## Alternatives considered
 
-Outras abordagens avaliadas e por que a proposta é melhor.
+Other approaches evaluated and why the proposal is better.
 
-## Checklist ético
+## Ethical checklist
 
-- [ ] A funcionalidade se destina a testes de segurança **autorizados**
-- [ ] Não visa facilitar uso ofensivo contra alvos sem permissão
+- [ ] The feature is intended for **authorized** security testing
+- [ ] It does not aim to facilitate offensive use against targets without permission
 
-## Contexto adicional
+## Additional context
 
-Referências, ferramentas similares, links ou prints.
+References, similar tools, links, or screenshots.
