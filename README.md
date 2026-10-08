@@ -84,6 +84,7 @@
 | 12 | **DNS Zone Transfer (AXFR)** | `dnspython` — tries AXFR against each authoritative NS |
 | 13 | **Web Content Discovery** | `aiohttp` — robots.txt / sitemap / security.txt + built-in path wordlist |
 | 14 | **Shodan Host** | Full `api.shodan.io` host lookup (ports, CPEs, CVEs, tags) — needs `api_keys.shodan`; falls back to InternetDB hint without a key |
+| 15 | **Email Security** | `dnspython` — SPF, DKIM, DMARC, DNSSEC and CAA analyzer with per-item verdict (`ok`/`weak`/`missing`) |
 
 ### `[2]` Brute Force
 

@@ -11,6 +11,14 @@ All notable changes to this project are documented here. The format is based on
   response), EPSS exploitation probability (first.org) and a CISA KEV flag
   (cached locally). Host risk is the highest severity found; KEV forces critical.
   New scan filters `--min-cvss` and `--kev-only`.
+- Email security recon (`recon mailsec`): analyzes SPF, DKIM, DMARC, DNSSEC and
+  CAA for a domain with a per-item verdict (ok/weak/missing), via the interactive
+  menu and the non-interactive CLI.
+
+### Changed
+- `README.pt-BR.md` brought to full parity with `README.md` (v2.2 features:
+  non-interactive CLI, AXFR/webscan/Shodan/mailsec, native wordlist, CVE
+  enrichment, CSV/MD export).
 
 ## [2.2.0] - 2026-10-08
 

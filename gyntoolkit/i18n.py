@@ -48,6 +48,7 @@ MESSAGES: dict[str, dict[str, str]] = {
         "menu.info.axfr": "DNS Zone Transfer (AXFR)",
         "menu.info.webscan": "Web Content Discovery",
         "menu.info.shodan": "Shodan Host (API key)",
+        "menu.info.mailsec": "Email Security (SPF/DKIM/DMARC)",
         # submenu: brute force
         "menu.brute.title": "Brute Force:",
         "menu.brute.cupp": "Generate Wordlist (CUPP)",
@@ -128,6 +129,7 @@ MESSAGES: dict[str, dict[str, str]] = {
         "status.axfr": "Attempting zone transfer (AXFR) for {d}...",
         "status.webscan": "Enumerating web content on {u}...",
         "status.shodan": "Querying Shodan for {t}...",
+        "status.mailsec": "Analyzing email security for {d}...",
         # labels / títulos / result
         "label.result": "Result:",
         "label.dns_records": "{t} records of {d}",
@@ -143,6 +145,7 @@ MESSAGES: dict[str, dict[str, str]] = {
         "label.axfr": "Zone transfer of {d}",
         "label.webscan": "Web content on {u} (found: {n})",
         "label.shodan": "Shodan host {t}",
+        "label.mailsec": "Email security of {d}",
         "label.creds_found": "Credentials found",
         "label.hosts_found": "Hosts found: {n}",
         "label.scan_results": "Results for {h}",
@@ -167,6 +170,9 @@ MESSAGES: dict[str, dict[str, str]] = {
         "table.traceroute": "TTL|IP|RTT",
         "table.scan": "Port|Service|Risk|Banner|CVEs",
         "table.webscan": "Status|Path|Length|Location",
+        "table.mailsec": "Check|Verdict|Detail",
+        "mailsec.verdict_ok": "OK", "mailsec.verdict_weak": "Weak",
+        "mailsec.verdict_missing": "Missing", "mailsec.verdict_unknown": "Unknown",
         # mensagens
         "msg.no_subdomains": "No subdomains found.",
         "msg.webscan_none": "No content discovered on {u}.",
@@ -271,6 +277,7 @@ MESSAGES: dict[str, dict[str, str]] = {
         "menu.info.axfr": "DNS Zone Transfer (AXFR)",
         "menu.info.webscan": "Web Content Discovery",
         "menu.info.shodan": "Shodan Host (API key)",
+        "menu.info.mailsec": "Segurança de E-mail (SPF/DKIM/DMARC)",
         # submenu: brute force
         "menu.brute.title": "Brute Force:",
         "menu.brute.cupp": "Gerar Wordlist (CUPP)",
@@ -351,6 +358,7 @@ MESSAGES: dict[str, dict[str, str]] = {
         "status.axfr": "Tentando zone transfer (AXFR) de {d}...",
         "status.webscan": "Enumerando conteúdo web em {u}...",
         "status.shodan": "Consultando Shodan para {t}...",
+        "status.mailsec": "Analisando segurança de e-mail de {d}...",
         # labels / títulos / result
         "label.result": "Resultado:",
         "label.dns_records": "Registros {t} de {d}",
@@ -366,6 +374,7 @@ MESSAGES: dict[str, dict[str, str]] = {
         "label.axfr": "Zone transfer de {d}",
         "label.webscan": "Conteúdo web em {u} (encontrados: {n})",
         "label.shodan": "Host Shodan {t}",
+        "label.mailsec": "Segurança de e-mail de {d}",
         "label.creds_found": "Credenciais encontradas",
         "label.hosts_found": "Hosts encontrados: {n}",
         "label.scan_results": "Resultados para {h}",
@@ -390,6 +399,9 @@ MESSAGES: dict[str, dict[str, str]] = {
         "table.traceroute": "TTL|IP|RTT",
         "table.scan": "Porta|Serviço|Risco|Banner|CVEs",
         "table.webscan": "Status|Path|Tamanho|Location",
+        "table.mailsec": "Checagem|Veredito|Detalhe",
+        "mailsec.verdict_ok": "OK", "mailsec.verdict_weak": "Fraco",
+        "mailsec.verdict_missing": "Ausente", "mailsec.verdict_unknown": "Indeterminado",
         # mensagens
         "msg.no_subdomains": "Nenhum subdomínio encontrado.",
         "msg.webscan_none": "Nenhum conteúdo descoberto em {u}.",

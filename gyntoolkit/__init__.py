@@ -30,6 +30,7 @@ from .core import (
     show_menu,
 )
 from .export import export_csv, export_html, export_json, export_md, save_report
+from .mailsec import DEFAULT_DKIM_SELECTORS, mailsec_report
 from .recon import (
     DNS_TYPES,
     TECH_SIGNATURES,
@@ -76,6 +77,8 @@ __all__ = [
     "escolher_tipo_dns", "DNS_TYPES", "TECH_SIGNATURES",
     # web discovery
     "web_discovery", "COMMON_PATHS",
+    # mail security
+    "mailsec_report", "DEFAULT_DKIM_SELECTORS",
     # wordlist
     "generate_wordlist",
     # brute
