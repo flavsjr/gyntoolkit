@@ -8,6 +8,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from . import i18n
 from .core import log
 
 
@@ -57,7 +58,7 @@ def _render_html_value(value: Any) -> str:
 
 
 _HTML_TEMPLATE = """<!doctype html>
-<html lang="pt-br">
+<html lang="{lang}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -83,9 +84,9 @@ _HTML_TEMPLATE = """<!doctype html>
 </head>
 <body>
   <h1>{title}</h1>
-  <div class="meta">Gerado por GynToolkit v2.0 &middot; {generated}</div>
+  <div class="meta">{generated_by} &middot; {generated}</div>
   {body}
-  <footer>GynToolkit &middot; use apenas em alvos autorizados.</footer>
+  <footer>{footer}</footer>
 </body>
 </html>
 """
@@ -93,10 +94,16 @@ _HTML_TEMPLATE = """<!doctype html>
 
 def export_html(data: Any, title: str, path: str) -> str:
     """Renderiza ``data`` em relatório HTML dark. Retorna o path escrito."""
+    from . import __version__
+
     body = _render_html_value(data)
+    lang = "pt-br" if i18n.get_lang() == "pt" else "en"
     doc = _HTML_TEMPLATE.format(
+        lang=lang,
         title=html.escape(title),
         generated=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        generated_by=html.escape(i18n.t("report.generated_by", version=f"v{__version__}")),
+        footer=html.escape(i18n.t("report.footer")),
         body=body,
     )
     p = Path(path).expanduser()
