@@ -8,12 +8,18 @@ on:
 
 jobs:
   unit:
-    name: unit (py${{ matrix.python-version }})
-    runs-on: ubuntu-latest
+    name: unit (${{ matrix.os }} py${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
+        # Full Python matrix on Linux; Windows (the primary target platform)
+        # is validated on one version to keep CI cost reasonable.
+        os: [ubuntu-latest]
         python-version: ["3.10", "3.11", "3.12", "3.13"]
+        include:
+          - os: windows-latest
+            python-version: "3.12"
     steps:
       - uses: actions/checkout@v7
 
@@ -32,8 +38,12 @@ jobs:
         run: pytest -q
 
   e2e:
-    name: e2e lab
-    runs-on: ubuntu-latest
+    name: e2e lab (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
     steps:
       - uses: actions/checkout@v7
 
