@@ -1,0 +1,23 @@
+# Pre-commit hooks — fecham o ciclo ruff + mypy localmente (espelham o CI).
+# Setup: pip install -e ".[dev]" && pre-commit install
+# Rodar em tudo: pre-commit run --all-files
+#
+# Hooks 'local/system' usam o ruff e o mypy já instalados por ".[dev]" — a MESMA
+# versão do CI — evitando drift de versão com um mirror pinado.
+repos:
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff (lint + fix)
+        entry: ruff check --fix
+        language: system
+        types: [python]
+        require_serial: true
+
+      - id: mypy
+        name: mypy
+        entry: mypy gyntoolkit
+        language: system
+        pass_filenames: false
+        types: [python]
+        require_serial: true

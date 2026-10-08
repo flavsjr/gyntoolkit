@@ -45,10 +45,17 @@ source .venv/bin/activate      # Linux/macOS
 
 # 3. Install in editable mode with the dev dependencies
 pip install -e ".[dev]"
+
+# 4. Enable the pre-commit hooks (ruff + mypy on each commit)
+pre-commit install
 ```
 
-The dev dependencies (`ruff`, `mypy`, `pytest`) are declared under
+The dev dependencies (`ruff`, `mypy`, `pytest`, `pre-commit`) are declared under
 `[project.optional-dependencies]` in `pyproject.toml`.
+
+The pre-commit hooks run `ruff check --fix` and `mypy gyntoolkit` before each
+commit (same tools as CI). Run them manually on everything with
+`pre-commit run --all-files`.
 
 Run the tool locally:
 
