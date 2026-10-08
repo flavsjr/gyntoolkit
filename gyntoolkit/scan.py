@@ -5,6 +5,7 @@ import asyncio
 import contextlib
 import ipaddress
 import os
+import re
 import threading
 import time
 
@@ -104,10 +105,79 @@ def _nvd_throttle(has_key: bool) -> None:
             time.sleep(wait)
         _nvd_last_call = time.monotonic()
 
-def check_vulnerabilities(service: str, api_key: str = "") -> list[str]:
-    """Consulta NVD API 2.0 por CVEs associados ao serviço (com rate-limit)."""
-    if not service or service.lower() in {"desconhecido", "unknown"}:
-        return []
+# Normaliza nomes de produto do banner → nome do produto no CPE da NVD.
+_CPE_PRODUCT_ALIASES = {
+    "apache": "http_server",
+    "httpd": "http_server",
+    "microsoft-iis": "internet_information_services",
+    "iis": "internet_information_services",
+    "openssh": "openssh",
+    "nginx": "nginx",
+    "lighttpd": "lighttpd",
+    "vsftpd": "vsftpd",
+    "proftpd": "proftpd",
+    "pureftpd": "pure-ftpd",
+    "postfix": "postfix",
+    "exim": "exim",
+    "sendmail": "sendmail",
+    "dovecot": "dovecot",
+    "mysql": "mysql",
+    "mariadb": "mariadb",
+    "postgresql": "postgresql",
+    "redis": "redis",
+    "mongodb": "mongodb",
+    "openssl": "openssl",
+    "samba": "samba",
+    "bind": "bind",
+}
+
+# Ordem importa: padrões mais específicos primeiro.
+_BANNER_PATTERNS = (
+    # SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.3
+    re.compile(r"ssh-[\d.]+-openssh[_-](?P<ver>\d+\.\d+(?:\.\d+)?(?:p\d+)?)", re.I),
+    # 220 (vsFTPd 3.0.3)
+    re.compile(r"(?P<prod>vsftpd)[ /_](?P<ver>\d+\.\d+(?:\.\d+)?)", re.I),
+    # Server: nginx/1.18.0  |  Apache/2.4.41  |  lighttpd/1.4.55
+    re.compile(r"server:\s*(?P<prod>[A-Za-z][\w+-]*)[/ ](?P<ver>\d+\.\d+(?:\.\d+)?)", re.I),
+    # genérico: produto/versão ou produto_versão  (OpenSSH_8.2p1, nginx/1.18.0)
+    re.compile(r"(?P<prod>[A-Za-z][\w+-]{2,})[/_ ]v?(?P<ver>\d+\.\d+(?:\.\d+)?(?:p\d+)?)", re.I),
+)
+
+
+def parse_service(banner: str) -> tuple[str, str | None]:
+    """Extrai (produto, versão) de um banner, best-effort.
+
+    Produto é minúsculo e normalizado p/ o nome usado no CPE da NVD quando há
+    alias conhecido. Versão é ``None`` quando não identificada. Sem match, usa o
+    primeiro token como produto.
+    """
+    if not banner:
+        return ("", None)
+    text = banner.strip()
+    for pat in _BANNER_PATTERNS:
+        m = pat.search(text)
+        if not m:
+            continue
+        gd = m.groupdict()
+        # padrão OpenSSH não captura 'prod' (nome fixo)
+        prod = (gd.get("prod") or "openssh").lower()
+        prod = _CPE_PRODUCT_ALIASES.get(prod, prod)
+        return (prod, gd.get("ver"))
+    token = re.split(r"[/_ ]", text, maxsplit=1)[0].lower()
+    # token puramente numérico (ex.: código de status "220") não é um produto:
+    # evita uma consulta de keyword inútil e ruidosa ao NVD.
+    if not token or token.isdigit():
+        return ("", None)
+    return (_CPE_PRODUCT_ALIASES.get(token, token), None)
+
+
+def _build_cpe(product: str, version: str) -> str:
+    """Monta um CPE 2.3 match string (vendor curinga) p/ virtualMatchString."""
+    return f"cpe:2.3:a:*:{product}:{version}:*:*:*:*:*:*:*"
+
+
+def _nvd_get(params: dict, api_key: str) -> list[str]:
+    """Faz uma requisição ao NVD e retorna até 5 CVE ids. [] em erro/sem dados."""
     headers = {"User-Agent": "gyntoolkit/2.0"}
     if api_key:
         headers["apiKey"] = api_key
@@ -115,7 +185,7 @@ def check_vulnerabilities(service: str, api_key: str = "") -> list[str]:
     try:
         response = requests.get(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
-            params={"keywordSearch": service, "resultsPerPage": 5},
+            params={**params, "resultsPerPage": 5},
             headers=headers,
             timeout=15,
         )
@@ -123,8 +193,31 @@ def check_vulnerabilities(service: str, api_key: str = "") -> list[str]:
         data = response.json()
         return [item["cve"]["id"] for item in data.get("vulnerabilities", [])[:5]]
     except (requests.RequestException, ValueError, KeyError) as e:
-        log.warning("NVD lookup falhou para '%s': %s", service, e)
+        log.warning("NVD lookup falhou (%s): %s", params, e)
         return []
+
+
+def check_vulnerabilities(service: str, api_key: str = "") -> list[str]:
+    """Consulta CVEs no NVD a partir de um banner/serviço (com rate-limit).
+
+    Estratégia: parseia produto+versão do banner. Com versão, consulta por CPE
+    (``virtualMatchString``), bem mais preciso que keyword. Sem resultado (ou sem
+    versão), cai para ``keywordSearch`` com 'produto versão' ou só o produto.
+    """
+    if not service or service.lower() in {"desconhecido", "unknown"}:
+        return []
+
+    product, version = parse_service(service)
+    if not product:
+        return []
+
+    if version:
+        cves = _nvd_get({"virtualMatchString": _build_cpe(product, version)}, api_key)
+        if cves:
+            return cves
+        # fallback: keyword 'produto versão'
+        return _nvd_get({"keywordSearch": f"{product} {version}"}, api_key)
+    return _nvd_get({"keywordSearch": product}, api_key)
 
 def network_discovery(cidr: str, timeout: int = 2) -> list[str]:
     """Descobre hosts ativos em rede via ARP scan (requer privilégio)."""
@@ -189,14 +282,16 @@ async def perform_scan(
         port, banner = await b_future
         banners[port] = banner
 
-    # Fase 3: Analisar vulnerabilidades. Dedup por serviço: consulta o NVD
-    # uma vez por serviço distinto (rate-limit caro) e reaproveita o resultado.
+    # Fase 3: Analisar vulnerabilidades. O lookup usa o banner inteiro (parseia
+    # produto+versão → CPE). Dedup por banner: consulta o NVD uma vez por banner
+    # distinto (rate-limit caro) e reaproveita o resultado.
     vuln_cache: dict[str, list[str]] = {}
     for port in open_ports:
-        service = banners[port].split()[0] if banners[port] else "unknown"
-        if service not in vuln_cache:
-            vuln_cache[service] = check_vulnerabilities(service, api_key=nvd_api_key)
-        vulns = vuln_cache[service]
+        banner = banners[port]
+        service = banner.split()[0] if banner else "unknown"
+        if banner not in vuln_cache:
+            vuln_cache[banner] = check_vulnerabilities(banner, api_key=nvd_api_key)
+        vulns = vuln_cache[banner]
 
         # 'service' e 'risco' são tokens neutros (DATA); o display os localiza
         # via i18n (scan.service_unknown / scan.risk_high / scan.risk_low).

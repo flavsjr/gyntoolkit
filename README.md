@@ -99,7 +99,9 @@
 - **Port scan** — fast (Top 21 common ports) or full (1–65535)
 - **SYN scan** (stealth) when privileged, automatic fallback to **TCP connect**
 - **Banner grabbing** — async, parallel
-- **CVE analysis** per service via **NVD API v2.0**
+- **CVE analysis** per service via **NVD API v2.0** — parses product + version
+  from the banner and matches by **CPE** (`virtualMatchString`), falling back to
+  keyword search; rate-limited and deduplicated per banner
 - **Host discovery** (ARP scan) by CIDR — e.g. `192.168.0.0/24`
 - Automatic risk classification based on CVEs found
 
