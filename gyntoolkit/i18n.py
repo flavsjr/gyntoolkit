@@ -50,6 +50,7 @@ MESSAGES: dict[str, dict[str, str]] = {
         # submenu: brute force
         "menu.brute.title": "Brute Force:",
         "menu.brute.cupp": "Generate Wordlist (CUPP)",
+        "menu.brute.genwl": "Generate Wordlist (native)",
         "menu.brute.ssh": "SSH Attack",
         "menu.brute.http": "HTTP Attack",
         # submenu: utilities
@@ -105,6 +106,10 @@ MESSAGES: dict[str, dict[str, str]] = {
         "prompt.file_path": "File path: ",
         "prompt.base64": "Base64: ",
         "prompt.jwt": "JWT: ",
+        "prompt.wl_terms": "Base words (comma-separated: name, pet, company, ...): ",
+        "prompt.wl_years": "Years/numbers (comma-separated, ENTER to skip): ",
+        "prompt.wl_leet": "Include leet variants? [y/N]: ",
+        "prompt.wl_save": "Save to file (ENTER to only print): ",
         # status (spinners)
         "status.whois": "Querying WHOIS for {d}...",
         "status.dns": "Querying {t} record for {d}...",
@@ -162,6 +167,9 @@ MESSAGES: dict[str, dict[str, str]] = {
         # mensagens
         "msg.no_subdomains": "No subdomains found.",
         "msg.webscan_none": "No content discovered on {u}.",
+        "msg.wl_empty": "No base words given. Aborting.",
+        "msg.wl_generated": "Generated {n} words.",
+        "msg.wl_saved": "Wordlist saved: {path}",
         "msg.axfr_vulnerable": "[!] AXFR ALLOWED — zone transfer exposed on at least one NS.",
         "msg.axfr_safe": "All nameservers refused the zone transfer (good).",
         "msg.no_breaches": "No known breach for {d}.",
@@ -258,6 +266,7 @@ MESSAGES: dict[str, dict[str, str]] = {
         # submenu: brute force
         "menu.brute.title": "Brute Force:",
         "menu.brute.cupp": "Gerar Wordlist (CUPP)",
+        "menu.brute.genwl": "Gerar Wordlist (nativo)",
         "menu.brute.ssh": "Ataque SSH",
         "menu.brute.http": "Ataque HTTP",
         # submenu: utilitários
@@ -313,6 +322,10 @@ MESSAGES: dict[str, dict[str, str]] = {
         "prompt.file_path": "Path do arquivo: ",
         "prompt.base64": "Base64: ",
         "prompt.jwt": "JWT: ",
+        "prompt.wl_terms": "Palavras-base (separadas por vírgula: nome, pet, empresa, ...): ",
+        "prompt.wl_years": "Anos/números (separados por vírgula, ENTER p/ pular): ",
+        "prompt.wl_leet": "Incluir variações leet? [s/N]: ",
+        "prompt.wl_save": "Salvar em arquivo (ENTER p/ só imprimir): ",
         # status (spinners)
         "status.whois": "Consultando WHOIS de {d}...",
         "status.dns": "Consultando registro {t} para {d}...",
@@ -370,6 +383,9 @@ MESSAGES: dict[str, dict[str, str]] = {
         # mensagens
         "msg.no_subdomains": "Nenhum subdomínio encontrado.",
         "msg.webscan_none": "Nenhum conteúdo descoberto em {u}.",
+        "msg.wl_empty": "Nenhuma palavra-base informada. Abortando.",
+        "msg.wl_generated": "Geradas {n} palavras.",
+        "msg.wl_saved": "Wordlist salva: {path}",
         "msg.axfr_vulnerable": "[!] AXFR PERMITIDO — zone transfer exposto em ao menos um NS.",
         "msg.axfr_safe": "Todos os nameservers recusaram o zone transfer (bom).",
         "msg.no_breaches": "Nenhum breach conhecido para {d}.",

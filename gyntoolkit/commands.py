@@ -162,6 +162,31 @@ def _h_brute(args: argparse.Namespace) -> tuple[Any, str, str]:
     return ({"target": args.target, "found": creds}, f"brute-{args.action}", f"Brute {args.action}")
 
 
+def _run_wordlist(args: argparse.Namespace) -> int:
+    """Gera wordlist e imprime linhas em stdout (ou salva com --save)."""
+    from .wordlist import generate_wordlist
+
+    terms = [t for t in (args.terms or "").split(",") if t.strip()]
+    years = [y for y in (args.years or "").split(",") if y.strip()]
+    if not terms:
+        print("[!] --terms is required (comma-separated base words).", file=sys.stderr)
+        return 2
+    words = generate_wordlist(
+        terms, years=years, use_leet=args.leet, use_special=not args.no_special,
+        combine=not args.no_combine, min_len=args.min_len, max_len=args.max_len,
+    )
+    if args.save:
+        from pathlib import Path as _P
+
+        p = _P(args.save).expanduser()
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text("\n".join(words) + "\n", encoding="utf-8")
+        print(f"[+] {len(words)} words -> {p}", file=sys.stderr)
+    if not args.quiet:
+        sys.stdout.write("\n".join(words) + ("\n" if words else ""))
+    return 0
+
+
 _DISPATCH = {"recon": _h_recon, "scan": _h_scan, "utils": _h_utils, "brute": _h_brute}
 
 
@@ -246,6 +271,18 @@ def build_parser() -> argparse.ArgumentParser:
     http_p.add_argument("--workers", type=int, default=0)
     http_p.add_argument("--authorize", action="store_true", help="Confirm you have written authorization.")
 
+    # wordlist (gerador nativo; saída em linhas, não JSON)
+    wl_p = sub.add_parser("wordlist", help="Generate a custom wordlist (CUPP-style, offline).")
+    wl_p.add_argument("--terms", required=True, help="Comma-separated base words (name, pet, company, ...).")
+    wl_p.add_argument("--years", default="", help="Comma-separated years/numbers to append.")
+    wl_p.add_argument("--leet", action="store_true", help="Also emit leet variants (a->4/@, e->3, ...).")
+    wl_p.add_argument("--no-special", dest="no_special", action="store_true", help="Skip common suffixes.")
+    wl_p.add_argument("--no-combine", dest="no_combine", action="store_true", help="Do not combine term pairs.")
+    wl_p.add_argument("--min-len", dest="min_len", type=int, default=4)
+    wl_p.add_argument("--max-len", dest="max_len", type=int, default=32)
+    wl_p.add_argument("--save", default=None, help="Write the wordlist to this file.")
+    wl_p.add_argument("-q", "--quiet", action="store_true", help="Do not print to stdout.")
+
     return p
 
 
@@ -261,6 +298,9 @@ def run(argv: list[str] | None = None) -> int:
 
     if args.group is None:
         return -1  # sinaliza "sem subcomando" → menu interativo
+
+    if args.group == "wordlist":
+        return _run_wordlist(args)
 
     handler = _DISPATCH[args.group]
     data, basename, title = handler(args)

@@ -88,11 +88,13 @@
 
 | # | Module | Details |
 |---|--------|---------|
-| 1 | **CUPP wordlist** | Wrapper for `cupp.py -i` — custom wordlist generator |
-| 2 | **SSH brute** | `paramiko`, async via `asyncio.to_thread`, concurrency `Semaphore`, delay |
-| 3 | **HTTP brute** | `aiohttp` — Basic Auth or form POST with configurable `fail_signature` |
+| 1 | **Native wordlist** | Built-in CUPP-style generator (offline, no external clone) — case/leet variants, years, suffixes, term combos |
+| 2 | **CUPP wordlist** | Optional wrapper for `cupp.py -i` |
+| 3 | **SSH brute** | `paramiko`, async via `asyncio.to_thread`, concurrency `Semaphore`, delay |
+| 4 | **HTTP brute** | `aiohttp` — Basic Auth or form POST with configurable `fail_signature` |
 
-> Every attack requires typing `AUTORIZO` to confirm — no silent bypass.
+> Every attack requires typing the authorization word (`AUTHORIZE` / `AUTORIZO`)
+> to confirm — no silent bypass.
 
 ### `[3]` Advanced Scanning
 
@@ -178,6 +180,7 @@ gyntoolkit scan 127.0.0.1 --type fast             # port scan + CVEs
 gyntoolkit scan 192.168.0.0/24                    # host discovery (CIDR)
 gyntoolkit utils hash "text" --algo sha1
 gyntoolkit utils jwt <token>
+gyntoolkit wordlist --terms alice,fluffy,acme --years 1990,2020 --leet --save wl.txt
 ```
 
 Global flags (place after the subcommand): `-o/--output DIR` saves a report,

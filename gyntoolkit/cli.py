@@ -38,6 +38,7 @@ from .recon import (
 from .scan import network_discovery, perform_scan
 from .utils import b64_decode, b64_encode, hash_file, hash_text, jwt_decode
 from .web import web_discovery
+from .wordlist import generate_wordlist
 
 # Valores canônicos de scan_type (DATA, usados por perform_scan). Neutros de
 # idioma; entradas localizadas (en/pt) são mapeadas por _normalize_scan_type.
@@ -307,10 +308,33 @@ async def main_flow():
                 i18n.t("menu.brute.cupp"),
                 i18n.t("menu.brute.ssh"),
                 i18n.t("menu.brute.http"),
+                i18n.t("menu.brute.genwl"),
             ])
 
             if sub_choice == 1:
                 cupp_generate()
+
+            elif sub_choice == 4:
+                terms_raw = input(f"\n{Fore.CYAN}{i18n.t('prompt.wl_terms')}{Style.RESET_ALL}")
+                terms = [t for t in terms_raw.split(",") if t.strip()]
+                if not terms:
+                    ui.error(i18n.t("msg.wl_empty"))
+                    _pause()
+                    continue
+                years_raw = input(f"{Fore.CYAN}{i18n.t('prompt.wl_years')}{Style.RESET_ALL}")
+                years = [y for y in years_raw.split(",") if y.strip()]
+                leet = input(f"{Fore.CYAN}{i18n.t('prompt.wl_leet')}{Style.RESET_ALL}").strip().lower() in ("y", "s")
+                save = input(f"{Fore.CYAN}{i18n.t('prompt.wl_save')}{Style.RESET_ALL}").strip()
+                words = generate_wordlist(terms, years=years, use_leet=leet)
+                ui.success(i18n.t("msg.wl_generated", n=len(words)))
+                if save:
+                    try:
+                        Path(save).expanduser().write_text("\n".join(words) + "\n", encoding="utf-8")
+                        ui.success(i18n.t("msg.wl_saved", path=save))
+                    except OSError as e:
+                        ui.error(i18n.t("msg.export_fail", err=e))
+                else:
+                    print("\n".join(words))
 
             elif sub_choice == 2:
                 if not print_ethical_warning("Brute-force SSH"):
