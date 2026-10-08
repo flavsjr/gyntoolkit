@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-10-08
+
 ### Added
 - CVE enrichment: scan results now carry CVSS base score/severity (from the NVD
   response), EPSS exploitation probability (first.org) and a CISA KEV flag
@@ -20,9 +22,8 @@ All notable changes to this project are documented here. The format is based on
   new main-menu entry (passive) and the `gyntoolkit audit <target>` CLI.
 
 ### Changed
-- `README.pt-BR.md` brought to full parity with `README.md` (v2.2 features:
-  non-interactive CLI, AXFR/webscan/Shodan/mailsec, native wordlist, CVE
-  enrichment, CSV/MD export).
+- `README.pt-BR.md` brought to full parity with `README.md` (non-interactive CLI,
+  AXFR/webscan/Shodan/mailsec, native wordlist, CVE enrichment, CSV/MD export).
 
 ## [2.2.0] - 2026-10-08
 
@@ -112,7 +113,8 @@ All notable changes to this project are documented here. The format is based on
 - `.gyntoolkit.yaml` configuration with deep-merge over defaults.
 - Local security lab (mock SSH/HTTP servers) with an end-to-end runner.
 
-[Unreleased]: https://github.com/flavsjr/gyntoolkit/compare/v2.2.0...HEAD
+[Unreleased]: https://github.com/flavsjr/gyntoolkit/compare/v2.3.0...HEAD
+[2.3.0]: https://github.com/flavsjr/gyntoolkit/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/flavsjr/gyntoolkit/compare/v2.1.1...v2.2.0
 [2.1.1]: https://github.com/flavsjr/gyntoolkit/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/flavsjr/gyntoolkit/compare/v2.0.0...v2.1.0
