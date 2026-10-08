@@ -20,6 +20,7 @@ from .brute import (
 from .config import CONFIG
 from .core import is_admin_windows, sanitize_input, show_menu
 from .export import save_report
+from .mailsec import mailsec_report
 from .recon import (
     dns_lookup,
     escolher_tipo_dns,
@@ -83,6 +84,24 @@ def _fmt_cve(v: dict) -> str:
     return f"{v['id']}{suffix}"
 
 
+def _mailsec_detail(name: str, c: dict) -> str:
+    """Resumo curto de uma checagem de email security p/ a tabela."""
+    if name == "spf":
+        d = c.get("record") or "—"
+        if c.get("notes"):
+            d += " · " + "; ".join(c["notes"])
+        return d[:70]
+    if name == "dmarc":
+        return f"p={c.get('policy') or '—'}"
+    if name == "dkim":
+        return ", ".join(c.get("selectors_found") or []) or "no selector matched"
+    if name == "dnssec":
+        return f"DNSKEY={c.get('dnskey')} DS={c.get('ds')}"
+    if name == "caa":
+        return f"{len(c.get('records') or [])} record(s)"
+    return ""
+
+
 def _offer_export(data, basename: str, title: str) -> None:
     """Oferece salvar ``data`` em JSON/HTML conforme config. No-op se vazio."""
     if not data:
@@ -133,6 +152,7 @@ async def main_flow():
                 i18n.t("menu.info.axfr"),
                 i18n.t("menu.info.webscan"),
                 i18n.t("menu.info.shodan"),
+                i18n.t("menu.info.mailsec"),
             ])
 
             if sub_choice == 1:
@@ -329,6 +349,18 @@ async def main_flow():
                 else:
                     ui.print_kv(i18n.t("label.shodan", t=target), info)
                     _offer_export(info, f"shodan-{target}", f"Shodan {target}")
+
+            elif sub_choice == 15:
+                domain = sanitize_input(input(_cyan("prompt.root_domain")), r"[A-Za-z0-9.-]")
+                with ui.status(i18n.t("status.mailsec", d=domain)):
+                    r = mailsec_report(domain)
+                rows = [
+                    (name.upper(), i18n.t(f"mailsec.verdict_{c['verdict']}"), _mailsec_detail(name, c))
+                    for name, c in r["checks"].items()
+                ]
+                ui.print_table(i18n.t("label.mailsec", d=domain),
+                               i18n.t("table.mailsec").split("|"), rows)
+                _offer_export(r, f"mailsec-{domain}", f"Email Security {domain}")
 
         elif choice == 2:  # Brute Force
             b = CONFIG["brute"]

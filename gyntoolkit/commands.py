@@ -58,6 +58,12 @@ def _h_recon(args: argparse.Namespace) -> tuple[Any, str, str]:
     if a == "axfr":
         r = recon.zone_transfer(args.target)
         return (r, f"axfr-{args.target}", f"Zone Transfer {args.target}")
+    if a == "mailsec":
+        from .mailsec import mailsec_report
+
+        sels = [s for s in (args.selectors or "").split(",") if s.strip()] or None
+        r = mailsec_report(args.target, selectors=sels)
+        return (r, f"mailsec-{args.target}", f"Email Security {args.target}")
     if a == "webscan":
         from pathlib import Path as _P
 
@@ -232,6 +238,9 @@ def build_parser() -> argparse.ArgumentParser:
     web_p = recon_sub.add_parser("webscan", parents=[io])
     web_p.add_argument("target", help="Base URL to enumerate.")
     web_p.add_argument("--wordlist", default=None, help="Path to a custom paths wordlist.")
+    mail_p = recon_sub.add_parser("mailsec", parents=[io])
+    mail_p.add_argument("target", help="Domain to analyze (SPF/DKIM/DMARC/DNSSEC/CAA).")
+    mail_p.add_argument("--selectors", default="", help="Comma-separated DKIM selectors to test.")
     tr_p = recon_sub.add_parser("traceroute", parents=[io])
     tr_p.add_argument("target")
     tr_p.add_argument("--max-hops", dest="max_hops", type=int,
