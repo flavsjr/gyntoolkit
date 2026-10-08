@@ -33,9 +33,11 @@ from .recon import (
     subdomain_enum,
     traceroute,
     whois_lookup,
+    zone_transfer,
 )
 from .scan import network_discovery, perform_scan
 from .utils import b64_decode, b64_encode, hash_file, hash_text, jwt_decode
+from .web import web_discovery
 
 # Valores canônicos de scan_type (DATA, usados por perform_scan). Neutros de
 # idioma; entradas localizadas (en/pt) são mapeadas por _normalize_scan_type.
@@ -113,6 +115,8 @@ async def main_flow():
                 i18n.t("menu.info.hibp"),
                 i18n.t("menu.info.macvendor"),
                 i18n.t("menu.info.traceroute"),
+                i18n.t("menu.info.axfr"),
+                i18n.t("menu.info.webscan"),
             ])
 
             if sub_choice == 1:
@@ -265,6 +269,37 @@ async def main_flow():
                                    i18n.t("table.traceroute").split("|"), rows)
                     _offer_export({"target": target, "dport": dport, "hops": hops},
                                   f"traceroute-{target}", f"Traceroute {target}")
+
+            elif sub_choice == 12:
+                domain = sanitize_input(input(_cyan("prompt.root_domain")), r"[A-Za-z0-9.-]")
+                with ui.status(i18n.t("status.axfr", d=domain)):
+                    r = zone_transfer(domain)
+                if "erro" in r:
+                    ui.error(r["erro"])
+                else:
+                    if r.get("vulnerable"):
+                        ui.error(i18n.t("msg.axfr_vulnerable"))
+                    else:
+                        ui.success(i18n.t("msg.axfr_safe"))
+                    ui.print_kv(i18n.t("label.axfr", d=domain), r["nameservers"])
+                    _offer_export(r, f"axfr-{domain}", f"Zone Transfer {domain}")
+
+            elif sub_choice == 13:
+                url = input(f"\n{Fore.CYAN}{i18n.t('prompt.url_http')}{Style.RESET_ALL}").strip()
+                with ui.status(i18n.t("status.webscan", u=url)):
+                    r = await web_discovery(url)
+                if "erro" in r:
+                    ui.error(r["erro"])
+                elif not r["found"]:
+                    ui.notice(i18n.t("msg.webscan_none", u=url))
+                else:
+                    rows = [
+                        (f["status"], f["path"], f["length"], f.get("location") or "—")
+                        for f in r["found"]
+                    ]
+                    ui.print_table(i18n.t("label.webscan", u=r["base"], n=r["total"]),
+                                   i18n.t("table.webscan").split("|"), rows)
+                    _offer_export(r, f"webscan-{url}", f"Web Discovery {url}")
 
         elif choice == 2:  # Brute Force
             b = CONFIG["brute"]
