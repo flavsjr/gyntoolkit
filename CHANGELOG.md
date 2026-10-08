@@ -7,6 +7,10 @@ All notable changes to this project are documented here. The format is based on
 ## [Unreleased]
 
 ### Added
+- Docs for the new modules: `docs/cli.md` (non-interactive CLI), `docs/audit.md`
+  and `docs/brute.md`; `reconnaissance.md` (AXFR, webscan, Shodan, email security),
+  `scanning.md` (CVE enrichment) and `reports.md` (CSV/Markdown) updated, plus the
+  config reference and both README doc indexes.
 - Pre-commit hooks (`.pre-commit-config.yaml`): `ruff check --fix` and
   `mypy gyntoolkit` run on each commit using the dev-installed tools (same as CI).
   Enable with `pre-commit install`; `pre-commit` added to dev deps.
